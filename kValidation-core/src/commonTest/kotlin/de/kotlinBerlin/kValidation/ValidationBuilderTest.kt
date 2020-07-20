@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package de.kotlinBerlin.kValidation
 
 import kotlin.test.Test
@@ -7,7 +9,7 @@ import kotlin.test.assertTrue
 class ValidationBuilderTest {
 
     // Some example constraints for Testing
-    fun ValidationBuilder<String>.containsANumber() =
+    private fun ValidationBuilder<String>.containsANumber() =
         pattern(".*\\d.*".toRegex()) hint "must have at least one number"
 
     @Test
@@ -19,7 +21,7 @@ class ValidationBuilderTest {
         }
 
         Register(password = "a").let { assertEquals(Valid(it), oneValidation(it)) }
-        Register(password = "").let { assertEquals(1, countErrors(oneValidation(it), Register::password)) }
+        assertEquals(1, countErrors(oneValidation(Register(password = "")), Register::password))
     }
 
     @Test
@@ -33,14 +35,14 @@ class ValidationBuilderTest {
             }
         }
 
-        Register(password = "a").let { assertEquals(Valid(it), twoDisjunctValidations(it)) }
-        Register(password = "").let { assertEquals(1, countErrors(twoDisjunctValidations(it), Register::password)) }
-        Register(password = "aaaaaaaaaaa").let {
+        Register(password = "a").let {
             assertEquals(
-                1,
-                countErrors(twoDisjunctValidations(it), Register::password)
+                Valid(it),
+                twoDisjunctValidations(it)
             )
         }
+        assertEquals(1, countErrors(twoDisjunctValidations(Register(password = "")), Register::password))
+        assertEquals(1, countErrors(twoDisjunctValidations(Register(password = "aaaaaaaaaaa")), Register::password))
     }
 
     @Test
@@ -52,17 +54,16 @@ class ValidationBuilderTest {
             }
         }
 
-        Register(password = "verysecure1").let { assertEquals(Valid(it), overlappingValidations(it)) }
-        Register(password = "9").let { assertEquals(1, countErrors(overlappingValidations(it), Register::password)) }
-        Register(password = "insecure").let {
+        Register(password = "verysecure1").let {
             assertEquals(
-                1,
-                countErrors(overlappingValidations(it), Register::password)
+                Valid(it),
+                overlappingValidations(it)
             )
         }
-        Register(password = "pass").let { assertEquals(2, countErrors(overlappingValidations(it), Register::password)) }
+        assertEquals(1, countErrors(overlappingValidations(Register(password = "9")), Register::password))
+        assertEquals(1, countErrors(overlappingValidations(Register(password = "insecure")), Register::password))
+        assertEquals(2, countErrors(overlappingValidations(Register(password = "pass")), Register::password))
     }
-
 
     @Test
     fun validatingMultipleFields() {
@@ -87,13 +88,8 @@ class ValidationBuilderTest {
             assertEquals(1, countFieldsWithErrors(overlappingValidations(it)))
             assertEquals(2, countErrors(overlappingValidations(it), Register::password))
         }
-        Register(password = "verysecure1").let {
-            assertEquals(
-                1,
-                countErrors(overlappingValidations(it), Register::email)
-            )
-        }
-        Register().let { assertEquals(2, countFieldsWithErrors(overlappingValidations(it))) }
+        assertEquals(1, countErrors(overlappingValidations(Register(password = "verysecure1")), Register::email))
+        assertEquals(2, countFieldsWithErrors(overlappingValidations(Register())))
     }
 
     @Test
@@ -104,14 +100,19 @@ class ValidationBuilderTest {
             }
         }
 
-        Register(referredBy = null).let { assertEquals(Valid(it), nullableTypeValidation(it)) }
-        Register(referredBy = "poweruser@test.com").let { assertEquals(Valid(it), nullableTypeValidation(it)) }
-        Register(referredBy = "poweruser@").let {
+        Register(referredBy = null).let {
             assertEquals(
-                1,
-                countErrors(nullableTypeValidation(it), Register::referredBy)
+                Valid(it),
+                nullableTypeValidation(it)
             )
         }
+        Register(referredBy = "poweruser@test.com").let {
+            assertEquals(
+                Valid(it),
+                nullableTypeValidation(it)
+            )
+        }
+        assertEquals(1, countErrors(nullableTypeValidation(Register(referredBy = "poweruser@")), Register::referredBy))
     }
 
     @Test
@@ -122,20 +123,17 @@ class ValidationBuilderTest {
             }
         }
 
-        Register(referredBy = "poweruser@test.com").let { assertEquals(Valid(it), nullableTypeValidation(it)) }
+        Register(referredBy = "poweruser@test.com").let {
+            assertEquals(
+                Valid(it),
+                nullableTypeValidation(it)
+            )
+        }
 
-        Register(referredBy = null).let {
-            assertEquals(
-                1,
-                countErrors(nullableTypeValidation(it), Register::referredBy)
-            )
-        }
-        Register(referredBy = "poweruser@").let {
-            assertEquals(
-                1,
-                countErrors(nullableTypeValidation(it), Register::referredBy)
-            )
-        }
+        assertEquals(1, countErrors(nullableTypeValidation(Register(referredBy = null)), Register::referredBy))
+        assertEquals(
+            1, countErrors(nullableTypeValidation(Register(referredBy = "poweruser@")), Register::referredBy)
+        )
     }
 
     @Test
@@ -148,13 +146,16 @@ class ValidationBuilderTest {
             }
         }
 
-        Register(home = Address("Home")).let { assertEquals(Valid(it), nestedTypeValidation(it)) }
-        Register(home = Address("")).let {
+        Register(home = Address("Home")).let {
             assertEquals(
-                1,
-                countErrors(nestedTypeValidation(it), Register::home, Address::address)
+                Valid(it),
+                nestedTypeValidation(it)
             )
         }
+        assertEquals(
+            1,
+            countErrors(nestedTypeValidation(Register(home = Address(""))), Register::home, Address::address)
+        )
     }
 
     @Test
@@ -165,20 +166,24 @@ class ValidationBuilderTest {
             Register::email.has.pattern(".+@.+".toRegex())
         }
 
-        Register(email = "tester@test.com", password = "a").let { assertEquals(Valid(it), splitDoubleValidation(it)) }
-        Register(email = "tester@test.com", password = "").let {
+        Register(email = "tester@test.com", password = "a").let {
             assertEquals(
-                1,
-                countErrors(splitDoubleValidation(it), Register::password)
+                Valid(it),
+                splitDoubleValidation(it)
             )
         }
-        Register(email = "tester@test.com", password = "aaaaaaaaaaa").let {
-            assertEquals(
-                1,
-                countErrors(splitDoubleValidation(it), Register::password)
+        assertEquals(
+            1,
+            countErrors(splitDoubleValidation(Register(email = "tester@test.com", password = "")), Register::password)
+        )
+        assertEquals(
+            1,
+            countErrors(
+                splitDoubleValidation(Register(email = "tester@test.com", password = "aaaaaaaaaaa")),
+                Register::password
             )
-        }
-        Register(email = "tester@").let { assertEquals(2, countFieldsWithErrors(splitDoubleValidation(it))) }
+        )
+        assertEquals(2, countFieldsWithErrors(splitDoubleValidation(Register(email = "tester@"))))
     }
 
     @Test
@@ -195,10 +200,15 @@ class ValidationBuilderTest {
         }
 
         Data().let { assertEquals(Valid(it), listValidation(it)) }
-        Data(registrations = listOf(Register(email = "valid"), Register(email = "a")))
-            .let {
-                assertEquals(1, countErrors(listValidation(it), Data::registrations, 1, Register::email))
-            }
+        assertEquals(
+            1,
+            countErrors(
+                listValidation(Data(registrations = listOf(Register(email = "valid"), Register(email = "a")))),
+                Data::registrations,
+                1,
+                Register::email
+            )
+        )
         Data(registrations = listOf(Register(email = "a"), Register(email = "ab")))
             .let {
                 assertEquals(2, countFieldsWithErrors(listValidation(it)))
@@ -209,7 +219,20 @@ class ValidationBuilderTest {
     @Test
     fun validateArrays() {
 
-        data class Data(val registrations: Array<Register> = emptyArray())
+        data class Data(val registrations: Array<Register> = emptyArray()) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is Data) return false
+
+                if (!registrations.contentEquals(other.registrations)) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                return registrations.contentHashCode()
+            }
+        }
 
         val arrayValidation = Validation<Data> {
             Data::registrations onEachArray {
@@ -220,10 +243,19 @@ class ValidationBuilderTest {
         }
 
         Data().let { assertEquals(Valid(it), arrayValidation(it)) }
-        Data(registrations = arrayOf(Register(email = "valid"), Register(email = "a")))
-            .let {
-                assertEquals(1, countErrors(arrayValidation(it), Data::registrations, 1, Register::email))
-            }
+        assertEquals(
+            1,
+            countErrors(
+                arrayValidation(
+                    Data(
+                        registrations = arrayOf(
+                            Register(email = "valid"),
+                            Register(email = "a")
+                        )
+                    )
+                ), Data::registrations, 1, Register::email
+            )
+        )
         Data(registrations = arrayOf(Register(email = "a"), Register(email = "ab")))
             .let {
                 assertEquals(2, countFieldsWithErrors(arrayValidation(it)))

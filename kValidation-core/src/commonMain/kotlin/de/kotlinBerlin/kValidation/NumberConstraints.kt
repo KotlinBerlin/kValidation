@@ -11,10 +11,8 @@ fun <T : Number> ValidationBuilder<T>.multipleOf(factor: Number): Constraint<T> 
     }
 }
 
-fun <T : Number> ValidationBuilder<T>.maximum(maximumInclusive: Number) = addConstraint(
-    "must be at most '{0}'",
-    maximumInclusive.toString()
-) { it.toDouble() <= maximumInclusive.toDouble() }
+fun <T : Number> ValidationBuilder<T>.maximum(maximumInclusive: Number) =
+    addConstraint("must be at most '{0}'", maximumInclusive.toString()) { it.toDouble() <= maximumInclusive.toDouble() }
 
 fun <T : Number> ValidationBuilder<T>.exclusiveMaximum(maximumExclusive: Number) = addConstraint(
     "must be less than '{0}'",

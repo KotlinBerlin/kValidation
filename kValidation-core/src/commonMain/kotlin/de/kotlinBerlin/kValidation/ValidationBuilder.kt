@@ -2,6 +2,8 @@
 
 package de.kotlinBerlin.kValidation
 
+import de.kotlinBerlin.kValidation.internal.OptionalPropertyValidation
+import de.kotlinBerlin.kValidation.internal.RequiredPropertyValidation
 import kotlin.reflect.KFunction1
 import kotlin.reflect.KProperty1
 
@@ -10,15 +12,15 @@ import kotlin.reflect.KProperty1
 annotation class ValidationDsl
 
 sealed class PathDescriptor<in T, out R> {
-    abstract operator fun invoke(aValue: T): R
+    abstract operator fun get(aValue: T): R
     abstract val name: String
     override fun equals(other: Any?): Boolean = other is PathDescriptor<*, *> && other.name == name
     override fun hashCode(): Int = name.hashCode()
 }
 
-class BasicPathDescriptor<in T, out R>(private val getter: (T) -> R, override val name: String) :
+class BasicPathDescriptor<in T, out R>(override val name: String, private val getter: (T) -> R) :
     PathDescriptor<T, R>() {
-    override fun invoke(aValue: T): R = getter(aValue)
+    override fun get(aValue: T): R = getter(aValue)
 }
 
 class ConditionalPathDescriptor<T, out R>(
@@ -26,7 +28,7 @@ class ConditionalPathDescriptor<T, out R>(
     val condition: Validation<T>
 ) : PathDescriptor<T, R>() {
     override val name: String get() = descriptor.name
-    override fun invoke(aValue: T): R = descriptor(aValue)
+    override fun get(aValue: T): R = descriptor[aValue]
     private val computedHashCode by lazy { arrayOf(name, condition).contentHashCode() }
 
     override fun equals(other: Any?): Boolean =
@@ -67,12 +69,12 @@ interface ValidationBuilder<T> {
 private inline fun <T, R, RESULT> asPathDescriptorDo(
     aProperty: KProperty1<T, R>,
     aProcessor: PathDescriptor<T, R>.() -> RESULT
-): RESULT = aProcessor.invoke(BasicPathDescriptor(aProperty::get, aProperty.name))
+): RESULT = aProcessor.invoke(BasicPathDescriptor(aProperty.name, aProperty::get))
 
 private inline fun <T, R, RESULT> asPathDescriptorDo(
     aFunction: KFunction1<T, R>,
     aProcessor: PathDescriptor<T, R>.() -> RESULT
-): RESULT = aProcessor.invoke(BasicPathDescriptor(aFunction::invoke, aFunction.name))
+): RESULT = aProcessor.invoke(BasicPathDescriptor(aFunction.name, aFunction::invoke))
 
 
 interface AndValidationBuilder<T> : ValidationBuilder<T> {
@@ -103,7 +105,7 @@ interface AndValidationBuilder<T> : ValidationBuilder<T> {
     infix fun <R> KProperty1<T, R?>.required(init: AndValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { required(init) }
 
-    val <R> KProperty1<T, R>.has: AndValidationBuilder<R> get() = BasicPathDescriptor(this, this.name).has
+    val <R> KProperty1<T, R>.has: AndValidationBuilder<R> get() = BasicPathDescriptor(this.name, this).has
 
     infix fun <R> KFunction1<T, R>.validate(init: AndValidationBuilder<R>.() -> Unit) =
         asPathDescriptorDo(this) { validate(init) }
@@ -123,7 +125,7 @@ interface AndValidationBuilder<T> : ValidationBuilder<T> {
     infix fun <R> KFunction1<T, R?>.required(init: AndValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { required(init) }
 
-    val <R> KFunction1<T, R>.has: AndValidationBuilder<R> get() = BasicPathDescriptor(this, this.name).has
+    val <R> KFunction1<T, R>.has: AndValidationBuilder<R> get() = BasicPathDescriptor(this.name, this).has
 
     fun shortCircuit()
 
@@ -160,7 +162,7 @@ interface OrValidationBuilder<T> : ValidationBuilder<T> {
     infix fun <R> KProperty1<T, R?>.required(init: OrValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { required(init) }
 
-    val <R> KProperty1<T, R>.has: OrValidationBuilder<R> get() = BasicPathDescriptor(this, this.name).has
+    val <R> KProperty1<T, R>.has: OrValidationBuilder<R> get() = BasicPathDescriptor(this.name, this).has
 
     infix operator fun <R> KFunction1<T, R>.invoke(init: OrValidationBuilder<R>.() -> Unit) =
         asPathDescriptorDo(this) { invoke(init) }
@@ -180,7 +182,7 @@ interface OrValidationBuilder<T> : ValidationBuilder<T> {
     infix fun <R> KFunction1<T, R?>.required(init: OrValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { required(init) }
 
-    val <R> KFunction1<T, R>.has: OrValidationBuilder<R> get() = BasicPathDescriptor(this, this.name).has
+    val <R> KFunction1<T, R>.has: OrValidationBuilder<R> get() = BasicPathDescriptor(this.name, this).has
 
     fun nonShortCircuit()
 
@@ -188,3 +190,10 @@ interface OrValidationBuilder<T> : ValidationBuilder<T> {
 
     fun and(anInitBlock: AndValidationBuilder<T>.() -> Unit)
 }
+
+fun <T : Any> ValidationBuilder<T?>.required(init: AndValidationBuilder<T>.() -> Unit): Unit =
+    run(RequiredPropertyValidation(BasicPathDescriptor("") { it }, Validation(init)))
+
+
+fun <T : Any> ValidationBuilder<T?>.ifPresent(init: AndValidationBuilder<T>.() -> Unit): Unit =
+    run(OptionalPropertyValidation(BasicPathDescriptor("") { it }, Validation(init)))

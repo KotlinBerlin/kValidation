@@ -10,19 +10,19 @@ internal class BasicOrValidationBuilder<T> : BasicValidationBuilder<T>(true), Or
     override fun isCombineWithOr(): Boolean = true
 
     override fun <R> PathDescriptor<T, R>.invoke(init: OrValidationBuilder<R>.() -> Unit) {
-        getOrCreateBuilder(NonNull).also(init)
+        getOrCreateBuilder(Undefined).also(init)
     }
 
     override fun <R> PathDescriptor<T, Iterable<R>>.onEachIterable(init: OrValidationBuilder<R>.() -> Unit) {
-        getOrCreateIterablePropertyBuilder(NonNull).also(init)
+        getOrCreateIterablePropertyBuilder(Undefined).also(init)
     }
 
     override fun <R> PathDescriptor<T, Array<R>>.onEachArray(init: OrValidationBuilder<R>.() -> Unit) {
-        getOrCreateBuilder<R>(ArrayPropKey(this, NonNull)).also(init)
+        getOrCreateBuilder<R>(ArrayPropKey(this, Undefined)).also(init)
     }
 
     override fun <K, V> PathDescriptor<T, Map<K, V>>.onEachMap(init: OrValidationBuilder<Map.Entry<K, V>>.() -> Unit) {
-        getOrCreateBuilder<Map.Entry<K, V>>(MapPropKey(this, NonNull)).also(init)
+        getOrCreateBuilder<Map.Entry<K, V>>(MapPropKey(this, Undefined)).also(init)
     }
 
     override fun <R> PathDescriptor<T, R?>.ifPresent(init: OrValidationBuilder<R>.() -> Unit) {
@@ -34,7 +34,7 @@ internal class BasicOrValidationBuilder<T> : BasicValidationBuilder<T>(true), Or
     }
 
     override val <R> PathDescriptor<T, R>.has: OrValidationBuilder<R>
-        get() = getOrCreateBuilder(NonNull)
+        get() = getOrCreateBuilder(Undefined)
 
     override fun and(anInitBlock: AndValidationBuilder<T>.() -> Unit) {
         val tempBuilder = BasicAndValidationBuilder<T>()

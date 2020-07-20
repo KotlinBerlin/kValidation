@@ -1,3 +1,5 @@
+@file:Suppress("unused", "SpellCheckingInspection")
+
 package de.kotlinBerlin.kValidation
 
 import kotlin.test.Test
@@ -86,7 +88,7 @@ val bothNamesOrNoneOrOnlyFamilyName = Validation<Person> {
         Person::name required {
             minLength(1)
         }
-    } required  {
+    } required {
         minLength(1)
     }
 }

@@ -8,10 +8,6 @@ plugins {
     id("org.jetbrains.dokka") version "0.10.1"
 }
 
-repositories {
-    maven("https://dl.bintray.com/konform-kt/konform")
-}
-
 val ideaActive = System.getProperty("idea.active") == "true"
 lateinit var tempJvm9KotlinOutputDir: File
 
@@ -74,6 +70,8 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
+                implementation("de.kotlin-berlin:kValidation-core:1.0-RC2")
+                implementation("de.kotlin-berlin:kModel-core:1.0-RC2")
             }
         }
 
@@ -87,6 +85,7 @@ kotlin {
         val jvm8Main by getting {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
+                implementation(kotlin("reflect"))
             }
         }
 
@@ -101,6 +100,7 @@ kotlin {
                 dependsOn(jvm8Main)
                 dependencies {
                     implementation(kotlin("stdlib-jdk8"))
+                    implementation(kotlin("reflect"))
                 }
             }
 

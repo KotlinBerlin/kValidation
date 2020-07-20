@@ -2,7 +2,7 @@ package de.kotlinBerlin.kValidation.internal
 
 import de.kotlinBerlin.kValidation.*
 
-internal class NonNullPropertyValidation<T, R>(
+internal class UndefinedPropertyValidation<T, R>(
     private val property: PathDescriptor<T, R>,
     private val validation: Validation<R>
 ) : Validation<T> {
@@ -12,8 +12,8 @@ internal class NonNullPropertyValidation<T, R>(
             if (tempResult !is Valid) return Valid(aValue)
 
         }
-        val propertyValue = property(aValue)
-        return validation.validate(propertyValue).mapError { ".${property.name}$it" }.map { aValue }
+        val propertyValue = property[aValue]
+        return validation.validate(propertyValue).mapError { ".${property.name}$it" }.withValue { aValue }
     }
 }
 
@@ -27,8 +27,8 @@ internal class OptionalPropertyValidation<T, R>(
             if (tempResult !is Valid) return Valid(aValue)
 
         }
-        val propertyValue = property(aValue) ?: return Valid(aValue)
-        return validation(propertyValue).mapError { ".${property.name}$it" }.map { aValue }
+        val propertyValue = property[aValue] ?: return Valid(aValue)
+        return validation(propertyValue).mapError { ".${property.name}$it" }.withValue { aValue }
     }
 }
 
@@ -41,9 +41,9 @@ internal class RequiredPropertyValidation<T, R>(
             val tempResult = property.condition(aValue)
             if (tempResult !is Valid) return Valid(aValue)
         }
-        val propertyValue = property(aValue)
+        val propertyValue = property[aValue]
             ?: return Invalid(mapOf(".${property.name}" to listOf("is required")))
-        return validation(propertyValue).mapError { ".${property.name}${it}" }.map { aValue }
+        return validation(propertyValue).mapError { ".${property.name}${it}" }.withValue { aValue }
     }
 }
 
@@ -52,8 +52,9 @@ internal class IterableValidation<T>(
 ) : Validation<Iterable<T>> {
     override fun validate(aValue: Iterable<T>): ValidationResult<Iterable<T>> {
         return aValue.foldIndexed(Valid(aValue)) { index, result: ValidationResult<Iterable<T>>, propertyValue ->
-            val propertyValidation = validation(propertyValue).mapError { "[$index]$it" }.map { aValue }
-            result.combineWith(propertyValidation, false)
+            val propertyValidation = validation(propertyValue).mapError { "[$index]$it" }.withValue { aValue }
+            val tempCombinedResult = result.combineWith(propertyValidation, false)
+            tempCombinedResult
         }
     }
 }
@@ -63,8 +64,9 @@ internal class ArrayValidation<T>(
 ) : Validation<Array<T>> {
     override fun validate(aValue: Array<T>): ValidationResult<Array<T>> {
         return aValue.foldIndexed(Valid(aValue)) { index, result: ValidationResult<Array<T>>, propertyValue ->
-            val propertyValidation = validation(propertyValue).mapError { "[$index]$it" }.map { aValue }
-            result.combineWith(propertyValidation, false)
+            val propertyValidation = validation(propertyValue).mapError { "[$index]$it" }.withValue { aValue }
+            val tempCombinedResult = result.combineWith(propertyValidation, false)
+            tempCombinedResult
         }
     }
 }
@@ -73,10 +75,22 @@ internal class MapValidation<K, V>(
     private val validation: Validation<Map.Entry<K, V>>
 ) : Validation<Map<K, V>> {
     override fun validate(aValue: Map<K, V>): ValidationResult<Map<K, V>> {
-        return aValue.asSequence().fold(Valid(aValue)) { result: ValidationResult<Map<K, V>>, entry ->
+        return aValue.entries.fold(Valid(aValue)) { result: ValidationResult<Map<K, V>>, entry ->
             val propertyValidation =
-                validation(entry).mapError { ".${entry.key.toString()}${it.removePrefix(".value")}" }.map { aValue }
-            result.combineWith(propertyValidation, false)
+                validation(entry).mapError { ".${entry.key.toString()}${it.removePrefix(".value")}" }
+                    .withValue { aValue }
+            val tempCombinedResult = result.combineWith(propertyValidation, false)
+            tempCombinedResult
+        }
+    }
+}
+
+internal class NotNullValidation<T : Any>(private val tempWrappedValidation: Validation<T>) : Validation<T?> {
+    override fun validate(aValue: T?): ValidationResult<T?> {
+        return if (aValue != null) {
+            tempWrappedValidation.validate(aValue).withValue { aValue }
+        } else {
+            Valid(aValue)
         }
     }
 }
@@ -85,14 +99,14 @@ internal class ValidationNode<T>(
     private val constraints: List<Constraint<T>>,
     private val subValidations: List<Validation<T>>,
     private val combineWithOr: Boolean = false,
-    private val shortCircuit: Boolean = false,
-    private val customErrorMessage: String? = null
+    private val shortCircuit: Boolean = false
 ) : Validation<T> {
     override fun validate(aValue: T): ValidationResult<T> =
         if (combineWithOr) validateOr(aValue) else validateAnd(aValue)
 
     private fun validateOr(aValue: T): ValidationResult<T> {
-        val tempLocalValidationResult = if (constraints.isEmpty()) NoResult(aValue) else validateLocalOr(aValue)
+        val tempLocalValidationResult: ValidationResult<T> =
+            if (constraints.isEmpty()) NoResult(aValue) else validateLocalOr(aValue)
 
         if (shortCircuit && tempLocalValidationResult is Valid) return tempLocalValidationResult
 

@@ -1,6 +1,7 @@
 rootProject.name = "kValidation"
 
 include("kValidation-core")
+include("kValidation-kModel")
 
 pluginManagement {
     repositories {

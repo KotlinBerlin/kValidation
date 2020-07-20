@@ -24,9 +24,9 @@ internal class DefaultValidationErrors(private val errors: List<ValidationError>
     override fun toString(): String = errors.toString()
 }
 
-sealed class ValidationResult<T>() {
+sealed class ValidationResult<in T> {
     abstract operator fun get(vararg propertyPath: Any): List<String>?
-    abstract fun <R> map(transform: (T) -> R): ValidationResult<R>
+    abstract fun <R> withValue(transform: () -> R): ValidationResult<R>
     abstract val errors: ValidationErrors
 }
 
@@ -37,8 +37,7 @@ class Invalid<T>(
     override fun get(vararg propertyPath: Any): List<String>? =
         internalErrors[propertyPath.joinToString("", transform = ::toPathSegment)]
 
-    override fun <R> map(transform: (T) -> R): ValidationResult<R> =
-        Invalid(this.internalErrors)
+    override fun <R> withValue(transform: () -> R): ValidationResult<R> = Invalid(this.internalErrors)
 
     private fun toPathSegment(it: Any): String = when (it) {
         is KFunction1<*, *> -> ".${it.name}"
@@ -63,13 +62,15 @@ class Invalid<T>(
 
 data class Valid<T>(val value: T) : ValidationResult<T>() {
     override fun get(vararg propertyPath: Any): List<String>? = null
-    override fun <R> map(transform: (T) -> R): ValidationResult<R> = Valid(transform(this.value))
+
+    override fun <R> withValue(transform: () -> R): ValidationResult<R> = Valid(transform())
     override val errors: ValidationErrors get() = NoValidationErrors
 }
 
 data class NoResult<T>(val value: T) : ValidationResult<T>() {
     override fun get(vararg propertyPath: Any): List<String>? = null
-    override fun <R> map(transform: (T) -> R): ValidationResult<R> = NoResult(transform(this.value))
+
+    override fun <R> withValue(transform: () -> R): ValidationResult<R> = NoResult(transform())
     override val errors: ValidationErrors get() = NoValidationErrors
 }
 

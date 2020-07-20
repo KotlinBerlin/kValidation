@@ -8,7 +8,7 @@ import de.kotlinBerlin.kValidation.internal.PropModifier.*
 
 
 internal enum class PropModifier {
-    NonNull, Optional, OptionalRequired
+    Undefined, Optional, OptionalRequired
 }
 
 internal abstract class PropKey<T> {
@@ -23,7 +23,7 @@ internal data class SingleValuePropKey<T, R>(
         @Suppress("UNCHECKED_CAST")
         val validations = (builder as BasicValidationBuilder<R>).build()
         return when (modifier) {
-            NonNull -> NonNullPropertyValidation(property, validations)
+            Undefined -> UndefinedPropertyValidation(property, validations)
             Optional -> OptionalPropertyValidation(property, validations)
             OptionalRequired -> RequiredPropertyValidation(property, validations)
         }
@@ -38,7 +38,7 @@ internal data class IterablePropKey<T, R>(
         @Suppress("UNCHECKED_CAST")
         val validations = (builder as BasicValidationBuilder<R>).build()
         return when (modifier) {
-            NonNull -> NonNullPropertyValidation(property, IterableValidation(validations))
+            Undefined -> UndefinedPropertyValidation(property, IterableValidation(validations))
             Optional -> OptionalPropertyValidation(property, IterableValidation(validations))
             OptionalRequired -> RequiredPropertyValidation(property, IterableValidation(validations))
         }
@@ -53,7 +53,7 @@ internal data class ArrayPropKey<T, R>(
         @Suppress("UNCHECKED_CAST")
         val validations = (builder as BasicValidationBuilder<R>).build()
         return when (modifier) {
-            NonNull -> NonNullPropertyValidation(property, ArrayValidation(validations))
+            Undefined -> UndefinedPropertyValidation(property, ArrayValidation(validations))
             Optional -> OptionalPropertyValidation(property, ArrayValidation(validations))
             OptionalRequired -> RequiredPropertyValidation(property, ArrayValidation(validations))
         }
@@ -68,7 +68,7 @@ internal data class MapPropKey<T, K, V>(
         @Suppress("UNCHECKED_CAST")
         val validations = (builder as BasicValidationBuilder<Map.Entry<K, V>>).build()
         return when (modifier) {
-            NonNull -> NonNullPropertyValidation(property, MapValidation(validations))
+            Undefined -> UndefinedPropertyValidation(property, MapValidation(validations))
             Optional -> OptionalPropertyValidation(property, MapValidation(validations))
             OptionalRequired -> RequiredPropertyValidation(property, MapValidation(validations))
         }
@@ -84,7 +84,7 @@ internal abstract class BasicValidationBuilder<T>(protected var shortCircuit: Bo
     protected abstract fun isCombineWithOr(): Boolean
 
     override fun build(): Validation<T> {
-        val nestedValidations = subValidations.map { (key, builder) -> key.build(builder) }
+        val nestedValidations: List<Validation<T>> = subValidations.map { (key, builder) -> key.build(builder) }
         return ValidationNode(
             constraints,
             nestedValidations + prebuiltValidations,

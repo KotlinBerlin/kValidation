@@ -1,6 +1,66 @@
+@file:Suppress("unused")
+
 package de.kotlinBerlin.kValidation
 
+import de.kotlinBerlin.kValidation.internal.*
+import kotlin.collections.Map.Entry
 import kotlin.jvm.JvmName
+
+@JvmName("onEachIterable")
+fun <T : Iterable<R>, R> AndValidationBuilder<T>.onEach(init: AndValidationBuilder<R>.() -> Unit) {
+    val tempBuilder = BasicAndValidationBuilder<R>()
+    tempBuilder.init()
+    val tempIterableValidation = IterableValidation(tempBuilder.build())
+    run(UndefinedPropertyValidation(BasicPathDescriptor<T, T>("") { it }, tempIterableValidation))
+}
+
+@JvmName("onEachArray")
+fun <T> AndValidationBuilder<Array<T>>.onEach(init: AndValidationBuilder<T>.() -> Unit) {
+    val tempBuilder = BasicAndValidationBuilder<T>()
+    tempBuilder.init()
+    val tempArrayValidation = ArrayValidation(tempBuilder.build())
+    val tempValidation =
+        UndefinedPropertyValidation(BasicPathDescriptor<Array<T>, Array<T>>("") { it }, tempArrayValidation)
+    run(tempValidation)
+}
+
+@JvmName("onEachMap")
+fun <M : Map<K, V>, K, V> AndValidationBuilder<M>.onEach(init: AndValidationBuilder<Entry<K, V>>.() -> Unit) {
+    val tempBuilder = BasicAndValidationBuilder<Entry<K, V>>()
+    tempBuilder.init()
+    val tempMapValidation = MapValidation(tempBuilder.build())
+    val tempValidation = UndefinedPropertyValidation(BasicPathDescriptor<M, M>("") { it }, tempMapValidation)
+    run(tempValidation)
+}
+
+@JvmName("onEachIterable")
+fun <T : Iterable<R>, R> OrValidationBuilder<T>.onEach(init: OrValidationBuilder<R>.() -> Unit) {
+    val tempBuilder = BasicOrValidationBuilder<R>()
+    tempBuilder.init()
+    val tempIterableValidation = IterableValidation(tempBuilder.build())
+    val tempValidation =
+        UndefinedPropertyValidation(BasicPathDescriptor<T, T>("") { it }, tempIterableValidation)
+    run(tempValidation)
+}
+
+@JvmName("onEachArray")
+fun <T> OrValidationBuilder<Array<T>>.onEach(init: OrValidationBuilder<T>.() -> Unit) {
+    val tempBuilder = BasicOrValidationBuilder<T>()
+    tempBuilder.init()
+    val tempArrayValidation = ArrayValidation(tempBuilder.build())
+    val tempValidation =
+        UndefinedPropertyValidation(BasicPathDescriptor<Array<T>, Array<T>>("") { it }, tempArrayValidation)
+    run(tempValidation)
+}
+
+@JvmName("onEachMap")
+fun <M : Map<K, V>, K, V> OrValidationBuilder<M>.onEach(init: OrValidationBuilder<Entry<K, V>>.() -> Unit) {
+    val tempBuilder = BasicOrValidationBuilder<Entry<K, V>>()
+    tempBuilder.init()
+    val tempMapValidation = MapValidation(tempBuilder.build())
+    val tempValidation = UndefinedPropertyValidation(BasicPathDescriptor<M, M>("") { it }, tempMapValidation)
+    run(tempValidation)
+}
 
 //Min items
 

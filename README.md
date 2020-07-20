@@ -70,7 +70,7 @@ Suppose you have a data class like this:
         val age: Int?
     )
 
-Using the Konform type-safe DSL you can quickly write up a validation
+Using the KValidation type-safe DSL you can quickly write up a validation
 
 
     val validateUser = Validation<UserProfile> {

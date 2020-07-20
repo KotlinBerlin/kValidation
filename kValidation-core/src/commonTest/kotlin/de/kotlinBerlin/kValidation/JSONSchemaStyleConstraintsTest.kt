@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package de.kotlinBerlin.kValidation
 
 import de.kotlinBerlin.kValidation.JSONSchemaStyleConstraintsTest.TCPPacket.*
@@ -241,7 +243,10 @@ class JSONSchemaStyleConstraintsTest {
             pattern("^\\w+@\\w+\\.\\w+$".toRegex())
         }
 
-        assertEquals(Valid("tester@example.com"), compiledRegexValidation("tester@example.com"))
+        assertEquals(
+            Valid("tester@example.com"),
+            compiledRegexValidation("tester@example.com")
+        )
         assertEquals(1, countFieldsWithErrors(compiledRegexValidation("tester@example")))
         assertEquals(1, countFieldsWithErrors(compiledRegexValidation(" tester@example.com")))
         assertEquals(1, countFieldsWithErrors(compiledRegexValidation("tester@example.com ")))
@@ -268,7 +273,10 @@ class JSONSchemaStyleConstraintsTest {
 
         val mapValidation = Validation<Map<String, Int>> { minItems(1) }
 
-        assertEquals(Valid(mapOf("a" to 0, "b" to 1)), mapValidation(mapOf("a" to 0, "b" to 1)))
+        assertEquals(
+            Valid(mapOf("a" to 0, "b" to 1)),
+            mapValidation(mapOf("a" to 0, "b" to 1))
+        )
         assertEquals(Valid(mapOf("a" to 0)), mapValidation(mapOf("a" to 0)))
 
         assertEquals(1, countFieldsWithErrors(mapValidation(emptyMap())))
@@ -305,7 +313,10 @@ class JSONSchemaStyleConstraintsTest {
     fun minPropertiesConstraint() {
         val validation = Validation<Map<String, Int>> { minItems(1) }
 
-        assertEquals(Valid(mapOf("a" to 0, "b" to 1)), validation(mapOf("a" to 0, "b" to 1)))
+        assertEquals(
+            Valid(mapOf("a" to 0, "b" to 1)),
+            validation(mapOf("a" to 0, "b" to 1))
+        )
         assertEquals(Valid(mapOf("a" to 0)), validation(mapOf("a" to 0)))
 
         assertEquals(1, countFieldsWithErrors(validation(emptyMap())))
@@ -336,8 +347,14 @@ class JSONSchemaStyleConstraintsTest {
         val mapValidation = Validation<Map<String, String>> { uniqueValues(true) }
 
         assertEquals(Valid(emptyMap()), mapValidation(emptyMap()))
-        assertEquals(Valid(mapOf("a" to "b")), mapValidation(mapOf("a" to "b")))
-        assertEquals(Valid(mapOf("a" to "b", "b" to "c")), mapValidation(mapOf("a" to "b", "b" to "c")))
+        assertEquals(
+            Valid(mapOf("a" to "b")),
+            mapValidation(mapOf("a" to "b"))
+        )
+        assertEquals(
+            Valid(mapOf("a" to "b", "b" to "c")),
+            mapValidation(mapOf("a" to "b", "b" to "c"))
+        )
 
         assertEquals(1, countFieldsWithErrors(validation(listOf("a", "a"))))
 
