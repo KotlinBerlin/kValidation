@@ -22,7 +22,6 @@ class JSONSchemaStyleConstraintsTest {
         assertEquals(1, countFieldsWithErrors(anyValidation(1.0)))
         assertEquals(1, countFieldsWithErrors(anyValidation(true)))
 
-
         val anyNumberValidation = Validation<Any> { type<Int>() }
         assertEquals<ValidationResult<Any>>(Valid(1), anyNumberValidation(1))
         assertEquals(1, countFieldsWithErrors(anyNumberValidation("String")))

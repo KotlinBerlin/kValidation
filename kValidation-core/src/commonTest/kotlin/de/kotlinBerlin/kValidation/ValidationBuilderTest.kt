@@ -195,7 +195,7 @@ class ValidationBuilderTest {
         data class Data(val registrations: List<Register> = emptyList())
 
         val listValidation = Validation<Data> {
-            Data::registrations onEachIterable {
+            Data::registrations allInIterable {
                 Register::email.validate {
                     minLength(3)
                 }
@@ -238,7 +238,7 @@ class ValidationBuilderTest {
         }
 
         val arrayValidation = Validation<Data> {
-            Data::registrations onEachArray {
+            Data::registrations allInArray {
                 Register::email.validate {
                     minLength(3)
                 }
@@ -272,7 +272,7 @@ class ValidationBuilderTest {
         data class Data(val registrations: Map<String, Register> = emptyMap())
 
         val mapValidation = Validation<Data> {
-            Data::registrations onEachMap {
+            Data::registrations allInMap {
                 Map.Entry<String, Register>::value.validate {
                     Register::email.validate {
                         minLength(2)

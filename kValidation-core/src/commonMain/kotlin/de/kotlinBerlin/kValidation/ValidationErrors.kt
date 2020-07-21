@@ -14,19 +14,27 @@ internal class DefaultValidationErrors(private val errors: List<ValidationError>
 
 /** A path from the root object that was validated to an sub object that was validated. */
 open class ValidationPath internal constructor(segments: List<PathDescriptor<*, *>>) {
-    private val _segments = mutableListOf(*segments.toTypedArray())
-
     /** A list of [PathDescriptor] instances that describes the path to a specific value that was validated. */
-    val segments: List<PathDescriptor<*, *>> get() = _segments
-
-    init {
-        cleanUp()
-    }
+    val segments: List<PathDescriptor<*, *>> = cleanUp(segments)
 
     /** Returns a string representation of this [ValidationPath]. */
     override fun toString(): String = segments.fold("this") { previousResult, nextSegment ->
         combineSegments(nextSegment, previousResult)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other is ValidationPath) {
+            if (segments.size != other.segments.size) return false
+            segments.forEachIndexed { tempIndex, tempSegment ->
+                val tempOtherSegment = other.segments[tempIndex]
+                if (tempOtherSegment != tempSegment) return false
+            }
+            return true
+        }
+        return false
+    }
+
+    override fun hashCode(): Int = segments.toTypedArray().contentHashCode()
 
     private fun combineSegments(
         nextSegment: PathDescriptor<*, *>,
@@ -40,8 +48,9 @@ open class ValidationPath internal constructor(segments: List<PathDescriptor<*, 
         }
     }
 
-    private fun cleanUp() {
-        val tempIterator = _segments.listIterator()
+    private fun cleanUp(aSegmentList: List<PathDescriptor<*, *>>): List<PathDescriptor<*, *>> {
+        val tempList = mutableListOf(*aSegmentList.toTypedArray())
+        val tempIterator = tempList.listIterator()
         for (tempSegment in tempIterator) {
             if (tempSegment is ThisPathDescriptor) {
                 tempIterator.remove()
@@ -49,6 +58,7 @@ open class ValidationPath internal constructor(segments: List<PathDescriptor<*, 
                 tempIterator.set(tempSegment.descriptor)
             }
         }
+        return tempList
     }
 }
 

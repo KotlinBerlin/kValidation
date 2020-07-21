@@ -59,7 +59,7 @@ class ReadmeExampleTest {
             }
 
             // validation on individual attendees
-            Event::attendees onEachIterable {
+            Event::attendees allInIterable {
                 Person::name.validate {
                     minLength(2)
                 }
@@ -78,7 +78,7 @@ class ReadmeExampleTest {
             }
 
             // validations for the individual entries
-            Event::ticketPrices onEachMap {
+            Event::ticketPrices allInMap {
                 // Tickets may be free
                 Entry<String, Double?>::value ifPresent {
                     minimum(0.01)

@@ -15,7 +15,7 @@ class ValidationResultTest {
                 minLength(1)
             }
 
-            Person::addresses onEachIterable  {
+            Person::addresses allInIterable  {
                 Address::city.validate {
                     City::postalCode.validate {
                         minLength(4)

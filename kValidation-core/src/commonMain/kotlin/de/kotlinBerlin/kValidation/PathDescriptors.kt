@@ -33,6 +33,9 @@ class PropertyPathDescriptor<in T, out R>(
 ) : PathDescriptor<T, R>() {
     override fun get(aValue: T): R = property(aValue)
     override val name: String get() = property.name
+
+    override fun equals(other: Any?): Boolean = other is PropertyPathDescriptor<*, *> && super.equals(other)
+    override fun hashCode(): Int = property.hashCode()
 }
 
 /** Represents the path to the result of a function. */
@@ -42,6 +45,8 @@ class FunctionPathDescriptor<in T, out R>(
 ) : PathDescriptor<T, R>() {
     override fun get(aValue: T): R = function(aValue)
     override val name: String get() = function.name
+    override fun equals(other: Any?): Boolean = other is FunctionPathDescriptor<*, *> && super.equals(other)
+    override fun hashCode(): Int = function.hashCode()
 }
 
 /** Represents the path to an entry in a map given its [key] */

@@ -13,16 +13,38 @@ internal class BasicAndValidationBuilder<T> : BasicValidationBuilder<T>(false), 
         getOrCreateBuilder(Undefined).also(init)
     }
 
-    override fun <R> PathDescriptor<T, Iterable<R>>.onEachIterable(init: AndValidationBuilder<R>.() -> Unit) {
-        getOrCreateIterablePropertyBuilder(Undefined).also(init)
+    override fun <R> PathDescriptor<T, Iterable<R>>.allInIterable(init: AndValidationBuilder<R>.() -> Unit) {
+        getOrCreateBuilder<R>(IterablePropKey(this, Undefined)).also(init)
     }
 
-    override fun <R> PathDescriptor<T, Array<R>>.onEachArray(init: AndValidationBuilder<R>.() -> Unit) {
+    override fun <R> PathDescriptor<T, Iterable<R>>.allIndicesInIterable(
+        vararg anIndexList: Int,
+        init: AndValidationBuilder<R>.() -> Unit
+    ) {
+        getOrCreateBuilder<R>(IterablePropKey(this, Undefined, anIndexList)).also(init)
+    }
+
+    override fun <R> PathDescriptor<T, Array<R>>.allInArray(init: AndValidationBuilder<R>.() -> Unit) {
         getOrCreateBuilder<R>(ArrayPropKey(this, Undefined)).also(init)
     }
 
-    override fun <K, V> PathDescriptor<T, Map<K, V>>.onEachMap(init: AndValidationBuilder<Map.Entry<K, V>>.() -> Unit) {
-        getOrCreateBuilder<Map.Entry<K, V>>(MapPropKey(this, Undefined)).also(init)
+    override fun <R> PathDescriptor<T, Array<R>>.allIndicesInArray(
+        vararg anIndexList: Int,
+        init: AndValidationBuilder<R>.() -> Unit
+    ) {
+        getOrCreateBuilder<R>(ArrayPropKey(this, Undefined, anIndexList)).also(init)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <K, V> PathDescriptor<T, Map<K, V>>.allInMap(init: AndValidationBuilder<Map.Entry<K, V>>.() -> Unit) {
+        getOrCreateBuilder<Map.Entry<K, V>>(MapPropKey(this, Undefined, emptyArray<Any>() as Array<K>)).also(init)
+    }
+
+    override fun <K, V> PathDescriptor<T, Map<K, V>>.allKeysInMap(
+        vararg aKeyList: K,
+        init: AndValidationBuilder<Map.Entry<K, V>>.() -> Unit
+    ) {
+        getOrCreateBuilder<Map.Entry<K, V>>(MapPropKey(this, Undefined, aKeyList)).also(init)
     }
 
     override fun <R> PathDescriptor<T, R?>.ifPresent(init: AndValidationBuilder<R>.() -> Unit) {
@@ -58,10 +80,7 @@ internal class BasicAndValidationBuilder<T> : BasicValidationBuilder<T>(false), 
     private fun <R> PathDescriptor<T, R?>.getOrCreateBuilder(modifier: PropModifier): AndValidationBuilder<R> =
         getOrCreateBuilder(SingleValuePropKey(this, modifier))
 
-    private fun <R> PathDescriptor<T, Iterable<R>>.getOrCreateIterablePropertyBuilder(modifier: PropModifier): AndValidationBuilder<R> =
-        getOrCreateBuilder(IterablePropKey(this, modifier))
-
     @Suppress("UNCHECKED_CAST")
-    override fun <R> getOrCreateBuilder(aKey: PropKey<T>): AndValidationBuilder<R> =
+    private fun <R> getOrCreateBuilder(aKey: PropKey<T>): AndValidationBuilder<R> =
         super.getOrCreateBuilder(aKey) { BasicAndValidationBuilder<R>() } as AndValidationBuilder<R>
 }

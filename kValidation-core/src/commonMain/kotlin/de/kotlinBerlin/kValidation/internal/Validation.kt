@@ -49,10 +49,12 @@ internal class RequiredPropertyValidation<T, R>(
 }
 
 internal class IterableValidation<T>(
-    private val validation: Validation<T>
+    private val validation: Validation<T>,
+    private vararg val anIndexList: Int
 ) : Validation<Iterable<T>> {
     override fun validate(aValue: Iterable<T>, aContext: ValidationContext): ValidationResult<Iterable<T>> {
         return aValue.foldIndexed(Valid(aValue)) { index, result: ValidationResult<Iterable<T>>, propertyValue ->
+            if (anIndexList.isNotEmpty() && !anIndexList.contains(index)) return@foldIndexed Valid(propertyValue)
             val propertyValidation =
                 validation.validate(propertyValue, aContext).mapError(IterablePathDescriptor(index))
                     .withValue { aValue }
@@ -63,10 +65,12 @@ internal class IterableValidation<T>(
 }
 
 internal class ArrayValidation<T>(
-    private val validation: Validation<T>
+    private val validation: Validation<T>,
+    private vararg val anIndexList: Int
 ) : Validation<Array<T>> {
     override fun validate(aValue: Array<T>, aContext: ValidationContext): ValidationResult<Array<T>> {
         return aValue.foldIndexed(Valid(aValue)) { index, result: ValidationResult<Array<T>>, propertyValue ->
+            if (anIndexList.isNotEmpty() && !anIndexList.contains(index)) return@foldIndexed Valid(propertyValue)
             val propertyValidation =
                 validation.validate(propertyValue, aContext).mapError(ArrayPathDescriptor(index)).withValue { aValue }
             val tempCombinedResult = result.combineWith(propertyValidation, false)
@@ -77,10 +81,12 @@ internal class ArrayValidation<T>(
 
 @Suppress("UNCHECKED_CAST")
 internal class MapValidation<K, V>(
-    private val validation: Validation<Map.Entry<K, V>>
+    private val validation: Validation<Map.Entry<K, V>>,
+    private vararg val aKeyList: K
 ) : Validation<Map<K, V>> {
     override fun validate(aValue: Map<K, V>, aContext: ValidationContext): ValidationResult<Map<K, V>> {
         return aValue.entries.fold(Valid(aValue)) { result: ValidationResult<Map<K, V>>, entry ->
+            if (aKeyList.isNotEmpty() && !aKeyList.contains(entry.key)) return@fold Valid(entry)
             val propertyValidation =
                 validation.validate(entry, aContext).mapError(MapPathDescriptor(entry.key)).withValue { aValue }
             val tempCombinedResult = result.combineWith(propertyValidation, false)
@@ -92,8 +98,8 @@ internal class MapValidation<K, V>(
 internal class ObjectValidation<T>(
     private val constraints: List<Constraint<T>>,
     private val subValidations: List<Validation<T>>,
-    private val combineWithOr: Boolean = false,
-    private val shortCircuit: Boolean = false
+    private val combineWithOr: Boolean,
+    private val shortCircuit: Boolean,
 ) : Validation<T> {
     override fun validate(aValue: T, aContext: ValidationContext): ValidationResult<T> =
         if (combineWithOr) validateOr(aValue, aContext) else validateAnd(aValue, aContext)

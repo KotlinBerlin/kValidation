@@ -4,7 +4,7 @@ package de.kotlinBerlin.kValidation
 
 import de.kotlinBerlin.kValidation.ValidationBuilder.Companion.asPathDescriptorDo
 import de.kotlinBerlin.kValidation.constraints.Constraint
-import de.kotlinBerlin.kValidation.internal.PropKey
+import kotlin.collections.Map.Entry
 import kotlin.jvm.JvmStatic
 import kotlin.reflect.KFunction1
 import kotlin.reflect.KProperty1
@@ -68,9 +68,25 @@ interface ValidationBuilder<T> {
 interface AndValidationBuilder<T> : ValidationBuilder<T> {
 
     infix fun <R> PathDescriptor<T, R>.validate(init: AndValidationBuilder<R>.() -> Unit)
-    infix fun <R> PathDescriptor<T, Iterable<R>>.onEachIterable(init: AndValidationBuilder<R>.() -> Unit)
-    infix fun <R> PathDescriptor<T, Array<R>>.onEachArray(init: AndValidationBuilder<R>.() -> Unit)
-    infix fun <K, V> PathDescriptor<T, Map<K, V>>.onEachMap(init: AndValidationBuilder<Map.Entry<K, V>>.() -> Unit)
+    infix fun <R> PathDescriptor<T, Iterable<R>>.allInIterable(init: AndValidationBuilder<R>.() -> Unit)
+
+    fun <R> PathDescriptor<T, Iterable<R>>.allIndicesInIterable(
+        vararg anIndexList: Int,
+        init: AndValidationBuilder<R>.() -> Unit
+    )
+
+    infix fun <R> PathDescriptor<T, Array<R>>.allInArray(init: AndValidationBuilder<R>.() -> Unit)
+    fun <R> PathDescriptor<T, Array<R>>.allIndicesInArray(
+        vararg anIndexList: Int,
+        init: AndValidationBuilder<R>.() -> Unit
+    )
+
+    infix fun <K, V> PathDescriptor<T, Map<K, V>>.allInMap(init: AndValidationBuilder<Entry<K, V>>.() -> Unit)
+    fun <K, V> PathDescriptor<T, Map<K, V>>.allKeysInMap(
+        vararg aKeyList: K,
+        init: AndValidationBuilder<Entry<K, V>>.() -> Unit
+    )
+
     infix fun <R> PathDescriptor<T, R?>.ifPresent(init: AndValidationBuilder<R>.() -> Unit)
     infix fun <R> PathDescriptor<T, R?>.required(init: AndValidationBuilder<R>.() -> Unit)
     val <R> PathDescriptor<T, R>.has: AndValidationBuilder<R>
@@ -78,14 +94,29 @@ interface AndValidationBuilder<T> : ValidationBuilder<T> {
     infix fun <R> KProperty1<T, R>.validate(init: AndValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { validate(init) }
 
-    infix fun <R> KProperty1<T, Iterable<R>>.onEachIterable(init: AndValidationBuilder<R>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachIterable(init) }
+    infix fun <R> KProperty1<T, Iterable<R>>.allInIterable(init: AndValidationBuilder<R>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInIterable(init) }
 
-    infix fun <R> KProperty1<T, Array<R>>.onEachArray(init: AndValidationBuilder<R>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachArray(init) }
+    fun <R> KProperty1<T, Iterable<R>>.allIndicesInIterable(
+        vararg anIndexList: Int,
+        init: AndValidationBuilder<R>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allIndicesInIterable(*anIndexList, init = init) }
 
-    infix fun <K, V> KProperty1<T, Map<K, V>>.onEachMap(init: AndValidationBuilder<Map.Entry<K, V>>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachMap(init) }
+    infix fun <R> KProperty1<T, Array<R>>.allInArray(init: AndValidationBuilder<R>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInArray(init) }
+
+    fun <R> KProperty1<T, Array<R>>.allIndicesInArray(
+        vararg anIndexList: Int,
+        init: AndValidationBuilder<R>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allIndicesInArray(*anIndexList, init = init) }
+
+    infix fun <K, V> KProperty1<T, Map<K, V>>.allInMap(init: AndValidationBuilder<Entry<K, V>>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInMap(init) }
+
+    fun <K, V> KProperty1<T, Map<K, V>>.allKeysInMap(
+        vararg aKeyList: K,
+        init: AndValidationBuilder<Entry<K, V>>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allKeysInMap(*aKeyList, init = init) }
 
     infix fun <R> KProperty1<T, R?>.ifPresent(init: AndValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { ifPresent(init) }
@@ -98,14 +129,29 @@ interface AndValidationBuilder<T> : ValidationBuilder<T> {
     infix fun <R> KFunction1<T, R>.validate(init: AndValidationBuilder<R>.() -> Unit) =
         asPathDescriptorDo(this) { validate(init) }
 
-    infix fun <R> KFunction1<T, Iterable<R>>.onEachIterable(init: AndValidationBuilder<R>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachIterable(init) }
+    infix fun <R> KFunction1<T, Iterable<R>>.allInIterable(init: AndValidationBuilder<R>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInIterable(init) }
 
-    infix fun <R> KFunction1<T, Array<R>>.onEachArray(init: AndValidationBuilder<R>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachArray(init) }
+    fun <R> KFunction1<T, Iterable<R>>.allIndicesInIterable(
+        vararg anIndexList: Int,
+        init: AndValidationBuilder<R>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allIndicesInIterable(*anIndexList, init = init) }
 
-    infix fun <K, V> KFunction1<T, Map<K, V>>.onEachMap(init: AndValidationBuilder<Map.Entry<K, V>>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachMap(init) }
+    infix fun <R> KFunction1<T, Array<R>>.allInArray(init: AndValidationBuilder<R>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInArray(init) }
+
+    fun <R> KFunction1<T, Array<R>>.allIndicesInArray(
+        vararg anIndexList: Int,
+        init: AndValidationBuilder<R>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allIndicesInArray(*anIndexList, init = init) }
+
+    infix fun <K, V> KFunction1<T, Map<K, V>>.allInMap(init: AndValidationBuilder<Entry<K, V>>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInMap(init) }
+
+    fun <K, V> KFunction1<T, Map<K, V>>.allKeysInMap(
+        vararg aKeyList: K,
+        init: AndValidationBuilder<Entry<K, V>>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allKeysInMap(*aKeyList, init = init) }
 
     infix fun <R> KFunction1<T, R?>.ifPresent(init: AndValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { ifPresent(init) }
@@ -120,15 +166,29 @@ interface AndValidationBuilder<T> : ValidationBuilder<T> {
     fun shortCircuit(anInitBlock: AndValidationBuilder<T>.() -> Unit)
 
     fun or(anInitBlock: OrValidationBuilder<T>.() -> Unit)
-    fun <R> getOrCreateBuilder(aKey: PropKey<T>): AndValidationBuilder<R>
 }
 
 interface OrValidationBuilder<T> : ValidationBuilder<T> {
 
     infix operator fun <R> PathDescriptor<T, R>.invoke(init: OrValidationBuilder<R>.() -> Unit)
-    infix fun <R> PathDescriptor<T, Iterable<R>>.onEachIterable(init: OrValidationBuilder<R>.() -> Unit)
-    infix fun <R> PathDescriptor<T, Array<R>>.onEachArray(init: OrValidationBuilder<R>.() -> Unit)
-    infix fun <K, V> PathDescriptor<T, Map<K, V>>.onEachMap(init: OrValidationBuilder<Map.Entry<K, V>>.() -> Unit)
+    infix fun <R> PathDescriptor<T, Iterable<R>>.allInIterable(init: OrValidationBuilder<R>.() -> Unit)
+    fun <R> PathDescriptor<T, Iterable<R>>.allIndicesInIterable(
+        vararg anIndexList: Int,
+        init: OrValidationBuilder<R>.() -> Unit
+    )
+
+    infix fun <R> PathDescriptor<T, Array<R>>.allInArray(init: OrValidationBuilder<R>.() -> Unit)
+    fun <R> PathDescriptor<T, Array<R>>.allIndicesInArray(
+        vararg anIndexList: Int,
+        init: OrValidationBuilder<R>.() -> Unit
+    )
+
+    infix fun <K, V> PathDescriptor<T, Map<K, V>>.allInMap(init: OrValidationBuilder<Entry<K, V>>.() -> Unit)
+    fun <K, V> PathDescriptor<T, Map<K, V>>.allKeysInMap(
+        vararg aKeyList: K,
+        init: OrValidationBuilder<Entry<K, V>>.() -> Unit
+    )
+
     infix fun <R> PathDescriptor<T, R?>.ifPresent(init: OrValidationBuilder<R>.() -> Unit)
     infix fun <R> PathDescriptor<T, R?>.required(init: OrValidationBuilder<R>.() -> Unit)
     val <R> PathDescriptor<T, R>.has: OrValidationBuilder<R>
@@ -136,14 +196,29 @@ interface OrValidationBuilder<T> : ValidationBuilder<T> {
     infix operator fun <R> KProperty1<T, R>.invoke(init: OrValidationBuilder<R>.() -> Unit) =
         asPathDescriptorDo(this) { invoke(init) }
 
-    infix fun <R> KProperty1<T, Iterable<R>>.onEachIterable(init: OrValidationBuilder<R>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachIterable(init) }
+    infix fun <R> KProperty1<T, Iterable<R>>.allInIterable(init: OrValidationBuilder<R>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInIterable(init) }
 
-    infix fun <R> KProperty1<T, Array<R>>.onEachArray(init: OrValidationBuilder<R>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachArray(init) }
+    fun <R> KProperty1<T, Iterable<R>>.allIndicesInIterable(
+        vararg anIndexList: Int,
+        init: OrValidationBuilder<R>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allIndicesInIterable(*anIndexList, init = init) }
 
-    infix fun <K, V> KProperty1<T, Map<K, V>>.onEachMap(init: OrValidationBuilder<Map.Entry<K, V>>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachMap(init) }
+    infix fun <R> KProperty1<T, Array<R>>.allInArray(init: OrValidationBuilder<R>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInArray(init) }
+
+    fun <R> KProperty1<T, Array<R>>.allIndicesInArray(
+        vararg anIndexList: Int,
+        init: OrValidationBuilder<R>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allIndicesInArray(*anIndexList, init = init) }
+
+    infix fun <K, V> KProperty1<T, Map<K, V>>.allInMap(init: OrValidationBuilder<Entry<K, V>>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInMap(init) }
+
+    fun <K, V> KProperty1<T, Map<K, V>>.allKeysInMap(
+        vararg aKeyList: K,
+        init: OrValidationBuilder<Entry<K, V>>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allKeysInMap(*aKeyList, init = init) }
 
     infix fun <R> KProperty1<T, R?>.ifPresent(init: OrValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { ifPresent(init) }
@@ -156,14 +231,29 @@ interface OrValidationBuilder<T> : ValidationBuilder<T> {
     infix operator fun <R> KFunction1<T, R>.invoke(init: OrValidationBuilder<R>.() -> Unit) =
         asPathDescriptorDo(this) { invoke(init) }
 
-    infix fun <R> KFunction1<T, Iterable<R>>.onEachIterable(init: OrValidationBuilder<R>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachIterable(init) }
+    infix fun <R> KFunction1<T, Iterable<R>>.allInIterable(init: OrValidationBuilder<R>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInIterable(init) }
 
-    infix fun <R> KFunction1<T, Array<R>>.onEachArray(init: OrValidationBuilder<R>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachArray(init) }
+    fun <R> KFunction1<T, Iterable<R>>.allIndicesInIterable(
+        vararg anIndexList: Int,
+        init: OrValidationBuilder<R>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allIndicesInIterable(*anIndexList, init = init) }
 
-    infix fun <K, V> KFunction1<T, Map<K, V>>.onEachMap(init: OrValidationBuilder<Map.Entry<K, V>>.() -> Unit): Unit =
-        asPathDescriptorDo(this) { onEachMap(init) }
+    infix fun <R> KFunction1<T, Array<R>>.allInArray(init: OrValidationBuilder<R>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInArray(init) }
+
+    fun <R> KFunction1<T, Array<R>>.allIndicesInArray(
+        vararg anIndexList: Int,
+        init: OrValidationBuilder<R>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allIndicesInArray(*anIndexList, init = init) }
+
+    infix fun <K, V> KFunction1<T, Map<K, V>>.allInMap(init: OrValidationBuilder<Entry<K, V>>.() -> Unit): Unit =
+        asPathDescriptorDo(this) { allInMap(init) }
+
+    fun <K, V> KFunction1<T, Map<K, V>>.allKeysInMap(
+        vararg aKeyList: K,
+        init: OrValidationBuilder<Entry<K, V>>.() -> Unit
+    ): Unit = asPathDescriptorDo(this) { allKeysInMap(*aKeyList, init = init) }
 
     infix fun <R> KFunction1<T, R?>.ifPresent(init: OrValidationBuilder<R>.() -> Unit): Unit =
         asPathDescriptorDo(this) { ifPresent(init) }
@@ -178,5 +268,4 @@ interface OrValidationBuilder<T> : ValidationBuilder<T> {
     fun nonShortCircuit(anInitBlock: OrValidationBuilder<T>.() -> Unit)
 
     fun and(anInitBlock: AndValidationBuilder<T>.() -> Unit)
-    fun <R> getOrCreateBuilder(aKey: PropKey<T>): OrValidationBuilder<R>
 }
