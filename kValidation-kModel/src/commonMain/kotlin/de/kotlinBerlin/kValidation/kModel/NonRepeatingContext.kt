@@ -1,9 +1,9 @@
 package de.kotlinBerlin.kValidation.kModel
 
 import de.kotlinBerlin.kValidation.BasicValidationContext
-import de.kotlinBerlin.kValidation.Constraint
 import de.kotlinBerlin.kValidation.ValidationBuilder
 import de.kotlinBerlin.kValidation.WrappingValidationContext
+import de.kotlinBerlin.kValidation.constraints.Constraint
 
 internal class NonRepeatingContext : BasicValidationContext() {
 

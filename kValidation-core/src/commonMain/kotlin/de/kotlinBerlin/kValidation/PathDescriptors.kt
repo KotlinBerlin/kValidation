@@ -27,7 +27,7 @@ class FunctionPathDescriptor<in T, out R>(val function: KFunction1<T, R>) : Path
 
 class MapPathDescriptor<T, R>(val entry: Map.Entry<T, R>) : PathDescriptor<Nothing, Map.Entry<T, R>>() {
     override fun get(aValue: Nothing): Map.Entry<T, R> = entry
-    override val name: String get() = entry.key.toString()
+    override val name: String get() = "[${entry.key.toString()}]"
 }
 
 class IndexPathDescriptor<R>(val index: Int, val value: R) : PathDescriptor<Nothing, R>() {

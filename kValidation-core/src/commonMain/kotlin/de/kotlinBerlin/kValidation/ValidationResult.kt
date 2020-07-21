@@ -11,7 +11,7 @@ class Invalid<T>(
 ) : ValidationResult<T>() {
 
     override fun get(vararg propertyPath: Any): List<String>? =
-        internalErrors.entries.find { it.key.matches(propertyPath) }?.value
+        internalErrors.entries.filter { it.key.matches(propertyPath) }.flatMap { it.value }
 
     override fun <R> withValue(transform: () -> R): ValidationResult<R> = Invalid(this.internalErrors)
 

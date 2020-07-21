@@ -289,8 +289,9 @@ class ValidationBuilderTest {
             )
         )
             .let {
-                assertEquals(0, countErrors(mapValidation(it), Data::registrations, "user1", Register::email))
-                assertEquals(1, countErrors(mapValidation(it), Data::registrations, "user2", Register::email))
+                val tempResult = mapValidation(it)
+                assertEquals(0, countErrors(tempResult, Data::registrations, "user1"))
+                assertEquals(1, countErrors(tempResult, Data::registrations, "user2"))
             }
     }
 

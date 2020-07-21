@@ -8,8 +8,10 @@ import de.kotlinBerlin.kModel.dsl.ModelClassBuilder
 import de.kotlinBerlin.kModel.dsl.ModelRelationBuilder
 import de.kotlinBerlin.kModel.dsl.ModelReverseRelationBuilder
 import de.kotlinBerlin.kValidation.*
+import de.kotlinBerlin.kValidation.constraints.onEach
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
 
 const val VALIDATOR_PROPERTY = "kValidator"
 
@@ -50,7 +52,7 @@ val <T : Any> ModelClass<T>.fullValidation: Validation<T> by object : ReadOnlyPr
                         is OneToManyRelation -> {
                             val tempRelation: OneToManyRelation<T, *, T?, MutableCollection<Any>> =
                                 it as OneToManyRelation<T, *, T?, MutableCollection<Any>>
-                            val tempSourceField = tempRelation.sourceField
+                            val tempSourceField: KProperty1<T, MutableCollection<Any>>? = tempRelation.sourceField
 
                             if (tempSourceField != null) {
                                 val tempFieldValidation = tempRelation.validation
@@ -73,7 +75,7 @@ val <T : Any> ModelClass<T>.fullValidation: Validation<T> by object : ReadOnlyPr
                         else -> {
                             val tempRelation: ModelRelation<T, *, T?, *, *, *> =
                                 it as ModelRelation<T, *, T?, *, *, *>
-                            val tempSourceField = it.sourceField
+                            val tempSourceField: KProperty1<T, Any?>? = it.sourceField
 
                             if (tempSourceField != null) {
                                 val tempFieldValidation = tempRelation.validation
@@ -103,12 +105,12 @@ val <T : Any> ModelClass<T>.fullValidation: Validation<T> by object : ReadOnlyPr
         }
         return object : Validation<T> {
             override fun validate(aValue: T, aContext: ValidationContext): ValidationResult<T> {
-                val tempContext =
+                val tempContext: WrappingValidationContext =
                     if (aContext is WrappingValidationContext && aContext.wrapped is NonRepeatingContext) aContext else WrappingValidationContext(
                         aContext,
                         NonRepeatingContext()
                     )
-                val tempPair = cache[thisRef]
+                val tempPair: Pair<Boolean, Validation<*>?>? = cache[thisRef]
                 return (tempPair?.second as? Validation<T>)?.validate(aValue, tempContext) ?: Valid(aValue)
             }
         }

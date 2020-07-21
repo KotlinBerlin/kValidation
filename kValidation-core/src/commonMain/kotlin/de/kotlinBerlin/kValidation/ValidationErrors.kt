@@ -1,5 +1,8 @@
 package de.kotlinBerlin.kValidation
 
+import kotlin.reflect.KFunction1
+import kotlin.reflect.KProperty1
+
 typealias ValidationErrors = List<ValidationError>
 
 internal object NoValidationErrors : ValidationErrors by emptyList()
@@ -61,17 +64,20 @@ internal data class BasicValidationError(
 }
 
 internal fun ValidationPath.matches(propertyPath: Array<out Any>): Boolean {
-    if (propertyPath.size != segments.size) return false
-    segments.forEachIndexed { index, segment ->
-        val tempExpected = propertyPath[index]
-        val tempIsEqual = when (segment) {
-            is PropertyPathDescriptor -> segment.property == tempExpected
-            is FunctionPathDescriptor -> segment.function == tempExpected
-            is MapPathDescriptor<*, *> -> segment.entry.key == tempExpected
-            is IndexPathDescriptor -> segment.index == tempExpected
+    propertyPath.forEachIndexed { index, pathSegment ->
+        val tempPathIdentifier = when (pathSegment) {
+            is KProperty1<*, *> -> pathSegment.name
+            is KFunction1<*, *> -> pathSegment.name
+            else -> pathSegment
+        }
+        val tempSegmentIdentifier = when (val tempActual = segments[index]) {
+            is PropertyPathDescriptor -> tempActual.property.name
+            is FunctionPathDescriptor -> tempActual.function.name
+            is MapPathDescriptor<*, *> -> tempActual.entry.key
+            is IndexPathDescriptor -> tempActual.index
             is ConditionalPathDescriptor, ThisPathDescriptor -> throw IllegalStateException("Should not happen!")
         }
-        if (!tempIsEqual) return false
+        if (tempSegmentIdentifier != tempPathIdentifier) return false
     }
     return true
 }
