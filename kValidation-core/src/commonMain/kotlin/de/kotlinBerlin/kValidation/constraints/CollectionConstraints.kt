@@ -2,64 +2,104 @@
 
 package de.kotlinBerlin.kValidation.constraints
 
-import de.kotlinBerlin.kValidation.AndValidationBuilder
-import de.kotlinBerlin.kValidation.OrValidationBuilder
-import de.kotlinBerlin.kValidation.ValidationBuilder
-import de.kotlinBerlin.kValidation.internal.*
+import de.kotlinBerlin.kValidation.*
+import de.kotlinBerlin.kValidation.internal.ArrayPropKey
+import de.kotlinBerlin.kValidation.internal.IterablePropKey
+import de.kotlinBerlin.kValidation.internal.MapPropKey
+import de.kotlinBerlin.kValidation.internal.PropModifier.Undefined
+import de.kotlinBerlin.kValidation.internal.SingleValuePropKey
 import kotlin.collections.Map.Entry
 import kotlin.jvm.JvmName
 
+/** Performs the specified validation on each item of an iterable. */
 @JvmName("onEachIterable")
 fun <T : Iterable<R>, R> AndValidationBuilder<T>.onEach(init: AndValidationBuilder<R>.() -> Unit) {
-    val tempBuilder = BasicAndValidationBuilder<R>()
-    tempBuilder.init()
-    val tempIterableValidation = IterableValidation(tempBuilder.build())
-    run(UndefinedPropertyValidation(thisPath, tempIterableValidation))
+    getOrCreateBuilder<R>(IterablePropKey(thisPath, Undefined)).also(init)
 }
 
+/** Performs the specified validation on the item of an iterable at the specified position. */
+@JvmName("onIndicesIterable")
+fun <T : Iterable<R>, R> AndValidationBuilder<T>.onIndices(
+    vararg anIndexList: Int,
+    init: AndValidationBuilder<R>.() -> Unit
+) {
+    anIndexList.forEach {
+        getOrCreateBuilder<R>(SingleValuePropKey(IterablePathDescriptor(it), Undefined)).also(init)
+    }
+}
+
+/** Performs the specified validation on each item of an array. */
 @JvmName("onEachArray")
-fun <T> AndValidationBuilder<Array<T>>.onEach(init: AndValidationBuilder<T>.() -> Unit) {
-    val tempBuilder = BasicAndValidationBuilder<T>()
-    tempBuilder.init()
-    val tempArrayValidation = ArrayValidation(tempBuilder.build())
-    val tempValidation = UndefinedPropertyValidation(thisPath, tempArrayValidation)
-    run(tempValidation)
+fun <R> AndValidationBuilder<Array<R>>.onEach(init: AndValidationBuilder<R>.() -> Unit) {
+    getOrCreateBuilder<R>(ArrayPropKey(thisPath, Undefined)).also(init)
 }
 
+/** Performs the specified validation on the item of an array at the specified position. */
+@JvmName("onIndicesArray")
+fun <R> AndValidationBuilder<Array<R>>.onIndices(vararg anIndexList: Int, init: AndValidationBuilder<R>.() -> Unit) {
+    anIndexList.forEach {
+        getOrCreateBuilder<R>(SingleValuePropKey(ArrayPathDescriptor(it), Undefined)).also(init)
+    }
+}
+
+/** Performs the specified validation on each entry of a map. */
 @JvmName("onEachMap")
-fun <M : Map<K, V>, K, V> AndValidationBuilder<M>.onEach(init: AndValidationBuilder<Entry<K, V>>.() -> Unit) {
-    val tempBuilder = BasicAndValidationBuilder<Entry<K, V>>()
-    tempBuilder.init()
-    val tempMapValidation = MapValidation(tempBuilder.build())
-    val tempValidation = UndefinedPropertyValidation(thisPath, tempMapValidation)
-    run(tempValidation)
+fun <K, V> AndValidationBuilder<Map<K, V>>.onEach(init: AndValidationBuilder<Entry<K, V>>.() -> Unit) {
+    getOrCreateBuilder<Entry<K, V>>(MapPropKey(thisPath, Undefined)).also(init)
 }
 
+/** Performs the specified validation on the item of an array at the specified position. */
+fun <K, V> AndValidationBuilder<Map<K, V>>.onKeys(
+    vararg aKeyList: K,
+    init: AndValidationBuilder<Entry<K, V>>.() -> Unit
+) {
+    aKeyList.forEach {
+        getOrCreateBuilder<Entry<K, V>>(SingleValuePropKey(MapPathDescriptor(it), Undefined)).also(init)
+    }
+}
+
+/** Performs the specified validation on each item of an iterable. */
 @JvmName("onEachIterable")
 fun <T : Iterable<R>, R> OrValidationBuilder<T>.onEach(init: OrValidationBuilder<R>.() -> Unit) {
-    val tempBuilder = BasicOrValidationBuilder<R>()
-    tempBuilder.init()
-    val tempIterableValidation = IterableValidation(tempBuilder.build())
-    val tempValidation = UndefinedPropertyValidation(thisPath, tempIterableValidation)
-    run(tempValidation)
+    getOrCreateBuilder<R>(IterablePropKey(thisPath, Undefined)).also(init)
 }
 
+/** Performs the specified validation on the item of an iterable at the specified position. */
+@JvmName("onIndicesIterable")
+fun <R> OrValidationBuilder<Iterable<R>>.onIndices(vararg anIndexList: Int, init: OrValidationBuilder<R>.() -> Unit) {
+    anIndexList.forEach {
+        getOrCreateBuilder<R>(SingleValuePropKey(IterablePathDescriptor(it), Undefined)).also(init)
+    }
+}
+
+/** Performs the specified validation on each item of an array. */
 @JvmName("onEachArray")
-fun <T> OrValidationBuilder<Array<T>>.onEach(init: OrValidationBuilder<T>.() -> Unit) {
-    val tempBuilder = BasicOrValidationBuilder<T>()
-    tempBuilder.init()
-    val tempArrayValidation = ArrayValidation(tempBuilder.build())
-    val tempValidation = UndefinedPropertyValidation(thisPath, tempArrayValidation)
-    run(tempValidation)
+fun <R> OrValidationBuilder<Array<R>>.onEach(init: OrValidationBuilder<R>.() -> Unit) {
+    getOrCreateBuilder<R>(ArrayPropKey(thisPath, Undefined)).also(init)
 }
 
+/** Performs the specified validation on the item of an iterable at the specified position. */
+@JvmName("onIndicesArray")
+fun <R> OrValidationBuilder<Array<R>>.onIndices(vararg anIndexList: Int, init: OrValidationBuilder<R>.() -> Unit) {
+    anIndexList.forEach {
+        getOrCreateBuilder<R>(SingleValuePropKey(ArrayPathDescriptor(it), Undefined)).also(init)
+    }
+}
+
+/** Performs the specified validation on each item of a map. */
 @JvmName("onEachMap")
-fun <M : Map<K, V>, K, V> OrValidationBuilder<M>.onEach(init: OrValidationBuilder<Entry<K, V>>.() -> Unit) {
-    val tempBuilder = BasicOrValidationBuilder<Entry<K, V>>()
-    tempBuilder.init()
-    val tempMapValidation = MapValidation(tempBuilder.build())
-    val tempValidation = UndefinedPropertyValidation(thisPath, tempMapValidation)
-    run(tempValidation)
+fun <K, V> OrValidationBuilder<Map<K, V>>.onEach(init: OrValidationBuilder<Entry<K, V>>.() -> Unit) {
+    getOrCreateBuilder<Entry<K, V>>(MapPropKey(thisPath, Undefined)).also(init)
+}
+
+/** Performs the specified validation on the item of an array at the specified position. */
+fun <K, V> OrValidationBuilder<Map<K, V>>.onKeys(
+    vararg aKeyList: K,
+    init: OrValidationBuilder<Entry<K, V>>.() -> Unit
+) {
+    aKeyList.forEach {
+        getOrCreateBuilder<Entry<K, V>>(SingleValuePropKey(MapPathDescriptor(it), Undefined)).also(init)
+    }
 }
 
 //Min items

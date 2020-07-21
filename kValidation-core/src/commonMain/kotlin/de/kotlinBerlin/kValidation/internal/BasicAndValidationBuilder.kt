@@ -30,7 +30,7 @@ internal class BasicAndValidationBuilder<T> : BasicValidationBuilder<T>(false), 
     }
 
     override fun <R> PathDescriptor<T, R?>.required(init: AndValidationBuilder<R>.() -> Unit) {
-        getOrCreateBuilder(OptionalRequired).also(init)
+        getOrCreateBuilder(Required).also(init)
     }
 
     override val <R> PathDescriptor<T, R>.has: AndValidationBuilder<R>
@@ -62,6 +62,6 @@ internal class BasicAndValidationBuilder<T> : BasicValidationBuilder<T>(false), 
         getOrCreateBuilder(IterablePropKey(this, modifier))
 
     @Suppress("UNCHECKED_CAST")
-    private fun <R> getOrCreateBuilder(aKey: PropKey<T>): AndValidationBuilder<R> =
+    override fun <R> getOrCreateBuilder(aKey: PropKey<T>): AndValidationBuilder<R> =
         super.getOrCreateBuilder(aKey) { BasicAndValidationBuilder<R>() } as AndValidationBuilder<R>
 }

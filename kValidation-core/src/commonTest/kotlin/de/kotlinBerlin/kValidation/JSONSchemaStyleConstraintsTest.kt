@@ -260,7 +260,9 @@ class JSONSchemaStyleConstraintsTest {
 
     @Test
     fun minSizeConstraint() {
-        val validation = Validation<List<String>> { minItems(1) }
+        val validation = Validation<List<String>> {
+            minItems(1)
+        }
 
         assertEquals(Valid(listOf("a", "b")), validation(listOf("a", "b")))
         assertEquals(Valid(listOf("a")), validation(listOf("a")))
@@ -268,7 +270,9 @@ class JSONSchemaStyleConstraintsTest {
         assertEquals(1, countFieldsWithErrors(validation(emptyList())))
 
 
-        val arrayValidation = Validation<Array<String>> { minItems(1) }
+        val arrayValidation = Validation<Array<String>> {
+            minItems(1)
+        }
 
         arrayOf("a", "b").let { assertEquals(Valid(it), arrayValidation(it)) }
         arrayOf("a").let { assertEquals(Valid(it), arrayValidation(it)) }

@@ -4,13 +4,14 @@ package de.kotlinBerlin.kValidation
 
 import de.kotlinBerlin.kValidation.ValidationBuilder.Companion.asPathDescriptorDo
 import de.kotlinBerlin.kValidation.constraints.Constraint
+import de.kotlinBerlin.kValidation.internal.PropKey
 import kotlin.jvm.JvmStatic
 import kotlin.reflect.KFunction1
 import kotlin.reflect.KProperty1
 
 @DslMarker
 @Target(AnnotationTarget.CLASS)
-annotation class ValidationDsl
+private annotation class ValidationDsl
 
 @ValidationDsl
 interface ValidationBuilder<T> {
@@ -119,6 +120,7 @@ interface AndValidationBuilder<T> : ValidationBuilder<T> {
     fun shortCircuit(anInitBlock: AndValidationBuilder<T>.() -> Unit)
 
     fun or(anInitBlock: OrValidationBuilder<T>.() -> Unit)
+    fun <R> getOrCreateBuilder(aKey: PropKey<T>): AndValidationBuilder<R>
 }
 
 interface OrValidationBuilder<T> : ValidationBuilder<T> {
@@ -176,4 +178,5 @@ interface OrValidationBuilder<T> : ValidationBuilder<T> {
     fun nonShortCircuit(anInitBlock: OrValidationBuilder<T>.() -> Unit)
 
     fun and(anInitBlock: AndValidationBuilder<T>.() -> Unit)
+    fun <R> getOrCreateBuilder(aKey: PropKey<T>): OrValidationBuilder<R>
 }

@@ -54,7 +54,7 @@ internal class IterableValidation<T>(
     override fun validate(aValue: Iterable<T>, aContext: ValidationContext): ValidationResult<Iterable<T>> {
         return aValue.foldIndexed(Valid(aValue)) { index, result: ValidationResult<Iterable<T>>, propertyValue ->
             val propertyValidation =
-                validation.validate(propertyValue, aContext).mapError(IndexPathDescriptor(index, propertyValue))
+                validation.validate(propertyValue, aContext).mapError(IterablePathDescriptor(index))
                     .withValue { aValue }
             val tempCombinedResult = result.combineWith(propertyValidation, false)
             tempCombinedResult
@@ -68,21 +68,21 @@ internal class ArrayValidation<T>(
     override fun validate(aValue: Array<T>, aContext: ValidationContext): ValidationResult<Array<T>> {
         return aValue.foldIndexed(Valid(aValue)) { index, result: ValidationResult<Array<T>>, propertyValue ->
             val propertyValidation =
-                validation.validate(propertyValue, aContext)
-                    .mapError(IndexPathDescriptor(index, propertyValue)).withValue { aValue }
+                validation.validate(propertyValue, aContext).mapError(ArrayPathDescriptor(index)).withValue { aValue }
             val tempCombinedResult = result.combineWith(propertyValidation, false)
             tempCombinedResult
         }
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 internal class MapValidation<K, V>(
     private val validation: Validation<Map.Entry<K, V>>
 ) : Validation<Map<K, V>> {
     override fun validate(aValue: Map<K, V>, aContext: ValidationContext): ValidationResult<Map<K, V>> {
         return aValue.entries.fold(Valid(aValue)) { result: ValidationResult<Map<K, V>>, entry ->
             val propertyValidation =
-                validation.validate(entry, aContext).mapError(MapPathDescriptor(entry)).withValue { aValue }
+                validation.validate(entry, aContext).mapError(MapPathDescriptor(entry.key)).withValue { aValue }
             val tempCombinedResult = result.combineWith(propertyValidation, false)
             tempCombinedResult
         }

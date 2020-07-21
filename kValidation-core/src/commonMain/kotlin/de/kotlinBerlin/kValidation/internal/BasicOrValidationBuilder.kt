@@ -30,7 +30,7 @@ internal class BasicOrValidationBuilder<T> : BasicValidationBuilder<T>(true), Or
     }
 
     override fun <R> PathDescriptor<T, R?>.required(init: OrValidationBuilder<R>.() -> Unit) {
-        getOrCreateBuilder(OptionalRequired).also(init)
+        getOrCreateBuilder(Required).also(init)
     }
 
     override val <R> PathDescriptor<T, R>.has: OrValidationBuilder<R>
@@ -62,6 +62,6 @@ internal class BasicOrValidationBuilder<T> : BasicValidationBuilder<T>(true), Or
         getOrCreateBuilder(IterablePropKey(this, modifier))
 
     @Suppress("UNCHECKED_CAST")
-    private fun <R> getOrCreateBuilder(aKey: PropKey<T>): OrValidationBuilder<R> =
+    override fun <R> getOrCreateBuilder(aKey: PropKey<T>): OrValidationBuilder<R> =
         super.getOrCreateBuilder(aKey) { BasicOrValidationBuilder<R>() } as OrValidationBuilder<R>
 }

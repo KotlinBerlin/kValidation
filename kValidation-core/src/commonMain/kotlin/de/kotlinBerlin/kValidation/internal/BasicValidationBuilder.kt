@@ -1,14 +1,14 @@
 package de.kotlinBerlin.kValidation.internal
 
-import de.kotlinBerlin.kValidation.constraints.Constraint
 import de.kotlinBerlin.kValidation.Validation
 import de.kotlinBerlin.kValidation.ValidationBuilder
 import de.kotlinBerlin.kValidation.ValidationContext
+import de.kotlinBerlin.kValidation.constraints.Constraint
 
 internal abstract class BasicValidationBuilder<T>(protected var shortCircuit: Boolean) : ValidationBuilder<T> {
 
     private val constraints = mutableListOf<Constraint<T>>()
-    private val subValidations = mutableMapOf<PropKey<T>, BasicValidationBuilder<*>>()
+    private val subValidations = mutableMapOf<PropKey<T>, ValidationBuilder<*>>()
     private val prebuiltValidations = mutableListOf<Validation<T>>()
 
     protected abstract fun isCombineWithOr(): Boolean
