@@ -11,7 +11,7 @@ fun <T : Iterable<R>, R> AndValidationBuilder<T>.onEach(init: AndValidationBuild
     val tempBuilder = BasicAndValidationBuilder<R>()
     tempBuilder.init()
     val tempIterableValidation = IterableValidation(tempBuilder.build())
-    run(UndefinedPropertyValidation(BasicPathDescriptor<T, T>("") { it }, tempIterableValidation))
+    run(UndefinedPropertyValidation(thisPath, tempIterableValidation))
 }
 
 @JvmName("onEachArray")
@@ -19,8 +19,7 @@ fun <T> AndValidationBuilder<Array<T>>.onEach(init: AndValidationBuilder<T>.() -
     val tempBuilder = BasicAndValidationBuilder<T>()
     tempBuilder.init()
     val tempArrayValidation = ArrayValidation(tempBuilder.build())
-    val tempValidation =
-        UndefinedPropertyValidation(BasicPathDescriptor<Array<T>, Array<T>>("") { it }, tempArrayValidation)
+    val tempValidation = UndefinedPropertyValidation(thisPath, tempArrayValidation)
     run(tempValidation)
 }
 
@@ -29,7 +28,7 @@ fun <M : Map<K, V>, K, V> AndValidationBuilder<M>.onEach(init: AndValidationBuil
     val tempBuilder = BasicAndValidationBuilder<Entry<K, V>>()
     tempBuilder.init()
     val tempMapValidation = MapValidation(tempBuilder.build())
-    val tempValidation = UndefinedPropertyValidation(BasicPathDescriptor<M, M>("") { it }, tempMapValidation)
+    val tempValidation = UndefinedPropertyValidation(thisPath, tempMapValidation)
     run(tempValidation)
 }
 
@@ -38,8 +37,7 @@ fun <T : Iterable<R>, R> OrValidationBuilder<T>.onEach(init: OrValidationBuilder
     val tempBuilder = BasicOrValidationBuilder<R>()
     tempBuilder.init()
     val tempIterableValidation = IterableValidation(tempBuilder.build())
-    val tempValidation =
-        UndefinedPropertyValidation(BasicPathDescriptor<T, T>("") { it }, tempIterableValidation)
+    val tempValidation = UndefinedPropertyValidation(thisPath, tempIterableValidation)
     run(tempValidation)
 }
 
@@ -48,8 +46,7 @@ fun <T> OrValidationBuilder<Array<T>>.onEach(init: OrValidationBuilder<T>.() -> 
     val tempBuilder = BasicOrValidationBuilder<T>()
     tempBuilder.init()
     val tempArrayValidation = ArrayValidation(tempBuilder.build())
-    val tempValidation =
-        UndefinedPropertyValidation(BasicPathDescriptor<Array<T>, Array<T>>("") { it }, tempArrayValidation)
+    val tempValidation = UndefinedPropertyValidation(thisPath, tempArrayValidation)
     run(tempValidation)
 }
 
@@ -58,7 +55,7 @@ fun <M : Map<K, V>, K, V> OrValidationBuilder<M>.onEach(init: OrValidationBuilde
     val tempBuilder = BasicOrValidationBuilder<Entry<K, V>>()
     tempBuilder.init()
     val tempMapValidation = MapValidation(tempBuilder.build())
-    val tempValidation = UndefinedPropertyValidation(BasicPathDescriptor<M, M>("") { it }, tempMapValidation)
+    val tempValidation = UndefinedPropertyValidation(thisPath, tempMapValidation)
     run(tempValidation)
 }
 
@@ -69,21 +66,21 @@ fun <T : Iterable<*>> ValidationBuilder<T>.minItems(minSize: Int): Constraint<T>
     addConstraint(
         "must have at least {0} item${if (minSize != 1) "s" else ""}",
         minSize.toString()
-    ) { it.count() >= minSize }
+    ) { tempValue, _ -> tempValue.count() >= minSize }
 
 @JvmName("maxItemsArray")
 fun <T> ValidationBuilder<Array<T>>.minItems(minSize: Int): Constraint<Array<T>> =
     addConstraint(
         "must have at least {0} item${if (minSize != 1) "s" else ""}",
         minSize.toString()
-    ) { it.count() >= minSize }
+    ) { tempValue, _ -> tempValue.count() >= minSize }
 
 @JvmName("maxItemsMap")
 fun <T : Map<*, *>> ValidationBuilder<T>.minItems(minSize: Int): Constraint<T> =
     addConstraint(
         "must have at least {0} item${if (minSize != 1) "s" else ""}",
         minSize.toString()
-    ) { it.count() >= minSize }
+    ) { tempValue, _ -> tempValue.count() >= minSize }
 
 // Max items
 
@@ -92,31 +89,37 @@ fun <T : Iterable<*>> ValidationBuilder<T>.maxItems(maxSize: Int): Constraint<T>
     addConstraint(
         "must have at most {0} item${if (maxSize != 1) "s" else ""}",
         maxSize.toString()
-    ) { it.count() <= maxSize }
+    ) { tempValue, _ -> tempValue.count() <= maxSize }
 
 @JvmName("minItemsArray")
 fun <T> ValidationBuilder<Array<T>>.maxItems(maxSize: Int): Constraint<Array<T>> =
     addConstraint(
         "must have at most {0} item${if (maxSize != 1) "s" else ""}",
         maxSize.toString()
-    ) { it.count() <= maxSize }
+    ) { tempValue, _ -> tempValue.count() <= maxSize }
 
 @JvmName("minItemsMap")
 fun <T : Map<*, *>> ValidationBuilder<T>.maxItems(maxSize: Int): Constraint<T> =
     addConstraint(
         "must have at most {0} item${if (maxSize != 1) "s" else ""}",
         maxSize.toString()
-    ) { it.count() <= maxSize }
+    ) { tempValue, _ -> tempValue.count() <= maxSize }
 
 //Uniqueness
 
 @JvmName("uniqueItemsIterable")
 fun <T : Iterable<*>> ValidationBuilder<T>.uniqueItems(unique: Boolean): Constraint<T> =
-    addConstraint("all items must be unique") { !unique || it.distinct().count() == it.count() }
+    addConstraint("all items must be unique") { tempValue, _ ->
+        !unique || tempValue.distinct().count() == tempValue.count()
+    }
 
 @JvmName("uniqueItemsArray")
 fun <T> ValidationBuilder<Array<T>>.uniqueItems(unique: Boolean): Constraint<Array<T>> =
-    addConstraint("all items must be unique") { !unique || it.distinct().count() == it.count() }
+    addConstraint("all items must be unique") { tempValue, _ ->
+        !unique || tempValue.distinct().count() == tempValue.count()
+    }
 
 fun <T : Map<*, *>> ValidationBuilder<T>.uniqueValues(unique: Boolean): Constraint<T> =
-    addConstraint("all values must be unique") { !unique || it.values.distinct().count() == it.values.count() }
+    addConstraint("all values must be unique") { tempValue, _ ->
+        !unique || tempValue.values.distinct().count() == tempValue.values.count()
+    }

@@ -1,9 +1,6 @@
 package de.kotlinBerlin.kValidation.internal
 
-import de.kotlinBerlin.kValidation.Constraint
-import de.kotlinBerlin.kValidation.PathDescriptor
-import de.kotlinBerlin.kValidation.Validation
-import de.kotlinBerlin.kValidation.ValidationBuilder
+import de.kotlinBerlin.kValidation.*
 import de.kotlinBerlin.kValidation.internal.PropModifier.*
 
 
@@ -102,7 +99,7 @@ internal abstract class BasicValidationBuilder<T>(protected var shortCircuit: Bo
     override fun addConstraint(
         errorMessage: String,
         vararg templateValues: String,
-        test: (T) -> Boolean
+        test: (T, ValidationContext?) -> Boolean
     ): Constraint<T> = Constraint(errorMessage, templateValues.toList(), test).also { constraints.add(it) }
 
     override fun run(validation: Validation<T>) {

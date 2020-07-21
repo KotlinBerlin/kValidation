@@ -20,6 +20,20 @@ interface Validation<in T> {
         }
     }
 
-    fun validate(aValue: T): ValidationResult<T>
-    operator fun invoke(value: T) = validate(value)
+    fun validate(aValue: T, aContext: ValidationContext): ValidationResult<T>
+    operator fun invoke(value: T) = validate(value, BasicValidationContext())
 }
+
+interface ValidationContext {
+    operator fun get(aKey: String): Any?
+    operator fun set(aKey: String, aValue: Any?)
+}
+
+open class BasicValidationContext : ValidationContext {
+    private val properties = mutableMapOf<String, Any?>()
+    override fun get(aKey: String): Any? = properties[aKey]
+    override fun set(aKey: String, aValue: Any?): Unit = properties.set(aKey, aValue)
+}
+
+class WrappingValidationContext(private val original: ValidationContext, val wrapped: ValidationContext) :
+    ValidationContext by original

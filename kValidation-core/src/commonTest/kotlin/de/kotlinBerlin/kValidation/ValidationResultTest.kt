@@ -27,13 +27,13 @@ class ValidationResultTest {
         assertEquals(3, result.errors.size)
         val (firstError, secondError, thirdError) = result.errors
 
-        assertEquals(".name", firstError.dataPath)
-        assertEquals("must have at least 1 characters", firstError.message)
+        assertEquals("this.name", firstError.dataPath)
+        assertEquals("'' must have at least 1 characters", firstError.message)
 
-        assertEquals(".addresses[0].city.postalCode", secondError.dataPath)
-        assertEquals("must have at least 4 characters", secondError.message)
+        assertEquals("this.addresses[0].city.postalCode", secondError.dataPath)
+        assertEquals("'' must have at least 4 characters", secondError.message)
 
-        assertEquals(".addresses[0].city.postalCode", thirdError.dataPath)
+        assertEquals("this.addresses[0].city.postalCode", thirdError.dataPath)
         assertEquals("must be a four or five digit number", thirdError.message)
     }
 

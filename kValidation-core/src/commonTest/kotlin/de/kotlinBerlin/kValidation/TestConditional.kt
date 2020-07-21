@@ -97,32 +97,32 @@ class TestConditional {
 
     @Test
     fun test1() {
-        val validate = bothNamesOrNoAtAll.validate(Person(null, null))
+        val validate = bothNamesOrNoAtAll(Person(null, null))
         println(validate)
         assertTrue("Should be valid") { validate is Valid }
-        val validate1 = bothNamesOrNoAtAll.validate(Person("1", "1"))
+        val validate1 = bothNamesOrNoAtAll(Person("1", "1"))
         println(validate1)
         assertTrue("Should be valid") { validate1 is Valid }
-        val validate2 = bothNamesOrNoAtAll.validate(Person("1", null))
+        val validate2 = bothNamesOrNoAtAll(Person("1", null))
         println(validate2)
         assertTrue("Should be invalid") { validate2 is Invalid }
-        val validate3 = bothNamesOrNoAtAll.validate(Person(null, "1"))
+        val validate3 = bothNamesOrNoAtAll(Person(null, "1"))
         println(validate3)
         assertTrue("Should be invalid") { validate3 is Invalid }
     }
 
     @Test
     fun test2() {
-        val validate = bothNamesOrNoneOrOnlyFamilyName.validate(Person(null, null))
+        val validate = bothNamesOrNoneOrOnlyFamilyName(Person(null, null))
         println(validate)
         assertTrue("Should be valid") { validate is Valid }
-        val validate1 = bothNamesOrNoneOrOnlyFamilyName.validate(Person("1", "1"))
+        val validate1 = bothNamesOrNoneOrOnlyFamilyName(Person("1", "1"))
         println(validate1)
         assertTrue("Should be valid") { validate1 is Valid }
-        val validate2 = bothNamesOrNoneOrOnlyFamilyName.validate(Person("1", null))
+        val validate2 = bothNamesOrNoneOrOnlyFamilyName(Person("1", null))
         println(validate2)
         assertTrue("Should be invalid") { validate2 is Invalid }
-        val validate3 = bothNamesOrNoneOrOnlyFamilyName.validate(Person(null, "1"))
+        val validate3 = bothNamesOrNoneOrOnlyFamilyName(Person(null, "1"))
         println(validate3)
         assertTrue("Should be valid") { validate3 is Valid }
     }
@@ -143,7 +143,7 @@ class TestShortCircuit {
             }
         }
 
-        val validate = tempValidation.validate(Person("1000", null))
+        val validate = tempValidation(Person("1000", null))
 
         println(validate)
     }

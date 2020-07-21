@@ -93,6 +93,7 @@ kotlin {
         val jvm8Test by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
+                implementation(kotlin("reflect"))
             }
         }
 

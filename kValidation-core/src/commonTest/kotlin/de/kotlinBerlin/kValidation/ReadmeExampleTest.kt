@@ -30,8 +30,8 @@ class ReadmeExampleTest {
         val validationResult = validateUser(invalidUser)
 
         assertEquals(2, validationResult.errors.size)
-        assertEquals("must have at least 2 characters", validationResult.errors.first().message)
-        assertEquals("must be at least '0'", validationResult.errors.last().message)
+        assertEquals("'A' must have at least 2 characters", validationResult.errors.first().message)
+        assertEquals("'-1' must be at least '0'", validationResult.errors.last().message)
     }
 
     @Test
@@ -114,7 +114,7 @@ class ReadmeExampleTest {
         assertEquals(3, countFieldsWithErrors(validateEvent(invalidEvent)))
         assertEquals(
             "Attendees must be 18 years or older",
-            validateEvent(invalidEvent)[Event::attendees, 0, Person::age]!![0]
+            validateEvent(invalidEvent)[Event::attendees, 0, Person::age]!!.errors[0]
         )
     }
 
