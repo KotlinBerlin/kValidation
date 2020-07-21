@@ -1,7 +1,10 @@
 @file:Suppress("unused")
 
-package de.kotlinBerlin.kValidation
+package de.kotlinBerlin.kValidation.constraints
 
+import de.kotlinBerlin.kValidation.AndValidationBuilder
+import de.kotlinBerlin.kValidation.OrValidationBuilder
+import de.kotlinBerlin.kValidation.ValidationBuilder
 import de.kotlinBerlin.kValidation.internal.*
 import kotlin.collections.Map.Entry
 import kotlin.jvm.JvmName

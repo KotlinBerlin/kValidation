@@ -2,6 +2,7 @@
 
 package de.kotlinBerlin.kValidation
 
+import de.kotlinBerlin.kValidation.constraints.*
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

@@ -1,4 +1,7 @@
-package de.kotlinBerlin.kValidation
+package de.kotlinBerlin.kValidation.constraints
+
+import de.kotlinBerlin.kValidation.ValidationBuilder
+import de.kotlinBerlin.kValidation.ValidationContext
 
 class Constraint<in R> internal constructor(
     val hint: String,

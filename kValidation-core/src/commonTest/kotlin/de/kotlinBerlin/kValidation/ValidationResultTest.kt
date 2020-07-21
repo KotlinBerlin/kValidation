@@ -1,5 +1,8 @@
 package de.kotlinBerlin.kValidation
 
+import de.kotlinBerlin.kValidation.constraints.maxLength
+import de.kotlinBerlin.kValidation.constraints.minLength
+import de.kotlinBerlin.kValidation.constraints.pattern
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

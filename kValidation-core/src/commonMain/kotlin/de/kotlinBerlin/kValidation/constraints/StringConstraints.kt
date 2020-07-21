@@ -1,4 +1,6 @@
-package de.kotlinBerlin.kValidation
+package de.kotlinBerlin.kValidation.constraints
+
+import de.kotlinBerlin.kValidation.ValidationBuilder
 
 fun ValidationBuilder<String>.minLength(length: Int): Constraint<String> {
     require(length >= 0) { IllegalArgumentException("minLength requires the length to be >= 0") }

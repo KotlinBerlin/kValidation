@@ -1,5 +1,6 @@
-package de.kotlinBerlin.kValidation
+package de.kotlinBerlin.kValidation.constraints
 
+import de.kotlinBerlin.kValidation.ValidationBuilder
 import kotlin.math.roundToInt
 
 fun <T : Number> ValidationBuilder<T>.multipleOf(factor: Number): Constraint<T> {

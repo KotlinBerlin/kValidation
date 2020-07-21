@@ -1,6 +1,7 @@
 package de.kotlinBerlin.kValidation
 
 
+import de.kotlinBerlin.kValidation.constraints.*
 import kotlin.collections.Map.Entry
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -114,7 +115,7 @@ class ReadmeExampleTest {
         assertEquals(3, countFieldsWithErrors(validateEvent(invalidEvent)))
         assertEquals(
             "Attendees must be 18 years or older",
-            validateEvent(invalidEvent)[Event::attendees, 0, Person::age]!!.errors[0]
+            validateEvent(invalidEvent)[Event::attendees, 0, Person::age]!![0]
         )
     }
 

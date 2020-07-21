@@ -1,6 +1,7 @@
 package de.kotlinBerlin.kValidation.internal
 
 import de.kotlinBerlin.kValidation.*
+import de.kotlinBerlin.kValidation.constraints.Constraint
 
 internal class UndefinedPropertyValidation<T, R>(
     private val pathDescriptor: PathDescriptor<T, R>,
@@ -13,8 +14,7 @@ internal class UndefinedPropertyValidation<T, R>(
 
         }
         val propertyValue = pathDescriptor[aValue]
-        return validation.validate(propertyValue, aContext).mapError(pathDescriptor) { ".${pathDescriptor.name}$it" }
-            .withValue { aValue }
+        return validation.validate(propertyValue, aContext).mapError(pathDescriptor).withValue { aValue }
     }
 }
 
@@ -29,8 +29,7 @@ internal class OptionalPropertyValidation<T, R>(
 
         }
         val propertyValue = pathDescriptor[aValue] ?: return Valid(aValue)
-        return validation.validate(propertyValue, aContext).mapError(pathDescriptor) { ".${pathDescriptor.name}$it" }
-            .withValue { aValue }
+        return validation.validate(propertyValue, aContext).mapError(pathDescriptor).withValue { aValue }
     }
 }
 
@@ -44,16 +43,8 @@ internal class RequiredPropertyValidation<T, R>(
             if (tempResult !is Valid) return Valid(aValue)
         }
         val propertyValue = pathDescriptor[aValue]
-            ?: return Invalid(
-                mapOf(
-                    ".${pathDescriptor.name}" to ErrorDescriptor(
-                        ValidationPath(listOf(pathDescriptor)),
-                        listOf("is required")
-                    )
-                )
-            )
-        return validation.validate(propertyValue, aContext).mapError(pathDescriptor) { ".${pathDescriptor.name}${it}" }
-            .withValue { aValue }
+            ?: return Invalid(mapOf(ValidationPath(listOf(pathDescriptor)) to listOf("is required")))
+        return validation.validate(propertyValue, aContext).mapError(pathDescriptor).withValue { aValue }
     }
 }
 
@@ -63,8 +54,8 @@ internal class IterableValidation<T>(
     override fun validate(aValue: Iterable<T>, aContext: ValidationContext): ValidationResult<Iterable<T>> {
         return aValue.foldIndexed(Valid(aValue)) { index, result: ValidationResult<Iterable<T>>, propertyValue ->
             val propertyValidation =
-                validation.validate(propertyValue, aContext)
-                    .mapError(IndexPathDescriptor(index, propertyValue)) { "[$index]$it" }.withValue { aValue }
+                validation.validate(propertyValue, aContext).mapError(IndexPathDescriptor(index, propertyValue))
+                    .withValue { aValue }
             val tempCombinedResult = result.combineWith(propertyValidation, false)
             tempCombinedResult
         }
@@ -78,8 +69,7 @@ internal class ArrayValidation<T>(
         return aValue.foldIndexed(Valid(aValue)) { index, result: ValidationResult<Array<T>>, propertyValue ->
             val propertyValidation =
                 validation.validate(propertyValue, aContext)
-                    .mapError(IndexPathDescriptor(index, propertyValue)) { "[$index]$it" }
-                    .withValue { aValue }
+                    .mapError(IndexPathDescriptor(index, propertyValue)).withValue { aValue }
             val tempCombinedResult = result.combineWith(propertyValidation, false)
             tempCombinedResult
         }
@@ -92,16 +82,14 @@ internal class MapValidation<K, V>(
     override fun validate(aValue: Map<K, V>, aContext: ValidationContext): ValidationResult<Map<K, V>> {
         return aValue.entries.fold(Valid(aValue)) { result: ValidationResult<Map<K, V>>, entry ->
             val propertyValidation =
-                validation.validate(entry, aContext)
-                    .mapError(MapPathDescriptor(entry)) { ".${entry.key.toString()}${it.removePrefix(".value")}" }
-                    .withValue { aValue }
+                validation.validate(entry, aContext).mapError(MapPathDescriptor(entry)).withValue { aValue }
             val tempCombinedResult = result.combineWith(propertyValidation, false)
             tempCombinedResult
         }
     }
 }
 
-internal class ValidationNode<T>(
+internal class ObjectValidation<T>(
     private val constraints: List<Constraint<T>>,
     private val subValidations: List<Validation<T>>,
     private val combineWithOr: Boolean = false,
@@ -153,7 +141,7 @@ internal class ValidationNode<T>(
                     if (it.isEmpty()) {
                         Valid(aValue)
                     } else {
-                        Invalid(mapOf("" to ErrorDescriptor(EmptyValidationPath, it)))
+                        Invalid(mapOf(EmptyValidationPath to it))
                     }
                 }
         }
@@ -189,14 +177,7 @@ internal class ValidationNode<T>(
             .filter {
                 val tempResult = it.test(aValue, aContext)
                 if (!tempResult && shortCircuit) {
-                    return Invalid(
-                        mapOf(
-                            "" to ErrorDescriptor(
-                                EmptyValidationPath,
-                                listOf(constructHint(aValue, it))
-                            )
-                        )
-                    )
+                    return Invalid(mapOf(EmptyValidationPath to listOf(constructHint(aValue, it))))
                 } else {
                     !tempResult
                 }
@@ -206,7 +187,7 @@ internal class ValidationNode<T>(
                 if (it.isEmpty()) {
                     Valid(aValue)
                 } else {
-                    Invalid(mapOf("" to ErrorDescriptor(EmptyValidationPath, it)))
+                    Invalid(mapOf(EmptyValidationPath to it))
                 }
             }
     }
@@ -218,28 +199,24 @@ internal class ValidationNode<T>(
     }
 }
 
-internal fun <R> ValidationResult<R>.mapError(
-    aPathDescriptor: PathDescriptor<*, R>,
-    keyTransform: (String) -> String
+private fun <R> ValidationResult<R>.mapError(
+    aPathDescriptor: PathDescriptor<*, R>
 ): ValidationResult<R> {
     return when (this) {
         is Valid -> this
         is NoResult -> this
         is Invalid -> {
             val tempMapped = this.internalErrors.map {
-                val tempPath = it.value.path.segments
-                val tempErrors = it.value.errors
-                Pair(
-                    keyTransform(it.key),
-                    ErrorDescriptor(ValidationPath(listOf(aPathDescriptor, *tempPath.toTypedArray())), tempErrors)
-                )
+                val tempPath = it.key
+                val tempErrors = it.value
+                ValidationPath(listOf(aPathDescriptor, *tempPath.segments.toTypedArray())) to tempErrors
             }.toMap()
             Invalid(tempMapped)
         }
     }
 }
 
-internal fun <R> ValidationResult<R>.combineWith(
+private fun <R> ValidationResult<R>.combineWith(
     other: ValidationResult<R>,
     aCombineWithOrFlag: Boolean
 ): ValidationResult<R> {
@@ -258,11 +235,7 @@ internal fun <R> ValidationResult<R>.combineWith(
             is Invalid -> {
                 val tempCombinedErrors = this.internalErrors.toList() + other.internalErrors.toList()
                 val tempGroupedValues = tempCombinedErrors.groupBy({ it.first }) { it.second }
-                val tempMappedValues = tempGroupedValues.mapValues { (_, descriptors) ->
-                    ErrorDescriptor(
-                        descriptors.first().path,
-                        descriptors.flatMap { it.errors })
-                }
+                val tempMappedValues = tempGroupedValues.mapValues { (_, errors) -> errors.flatten() }
                 Invalid(tempMappedValues)
             }
         }

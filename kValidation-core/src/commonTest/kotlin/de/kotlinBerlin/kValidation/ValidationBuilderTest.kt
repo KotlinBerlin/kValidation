@@ -2,6 +2,9 @@
 
 package de.kotlinBerlin.kValidation
 
+import de.kotlinBerlin.kValidation.constraints.maxLength
+import de.kotlinBerlin.kValidation.constraints.minLength
+import de.kotlinBerlin.kValidation.constraints.pattern
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -311,7 +314,7 @@ class ValidationBuilderTest {
         val validation = Validation<Register> {
             Register::password.has.minLength(8)
         }
-        assertTrue(validation(Register(password = ""))[Register::password]!!.errors[0].contains("8"))
+        assertTrue(validation(Register(password = ""))[Register::password]!![0].contains("8"))
     }
 
     private data class Register(
