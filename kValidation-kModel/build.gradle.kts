@@ -70,7 +70,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation("de.kotlin-berlin:kValidation-core:1.0-RC2")
+                implementation(project(":kValidation-core"))
                 implementation("de.kotlin-berlin:kModel-core:1.0-RC2")
             }
         }
