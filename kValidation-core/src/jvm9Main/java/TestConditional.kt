@@ -114,7 +114,7 @@ class TestConditional {
 
     @Test
     fun test2() {
-        val validate = bothNamesOrNoneOrOnlyFamilyName(Person(null, null))
+        val validate = bothNamesOrNoneOrOnlyFamilyName.invoke(Person(null, null))
         println(validate)
         assertTrue("Should be valid") { validate is Valid }
         val validate1 = bothNamesOrNoneOrOnlyFamilyName(Person("1", "1"))

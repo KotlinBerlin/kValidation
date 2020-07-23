@@ -56,19 +56,17 @@ class ReadmeExampleTest {
             // validation on the attendees list
             Event::attendees.validate {
                 maxItems(100)
-            }
-
-            // validation on individual attendees
-            Event::attendees allInIterable {
-                Person::name.validate {
-                    minLength(2)
-                }
-                Person::age.validate {
-                    minimum(18) hint "Attendees must be 18 years or older"
-                }
-                // Email is optional but if it is set it must be valid
-                Person::email ifPresent {
-                    pattern("\\w+@\\w+\\.\\w+") hint "Please provide a valid email address (optional)"
+                thisPath allInIterable {
+                    Person::name.validate {
+                        minLength(2)
+                    }
+                    Person::age.validate {
+                        minimum(18) hint "Attendees must be 18 years or older"
+                    }
+                    // Email is optional but if it is set it must be valid
+                    Person::email ifPresent {
+                        pattern("\\w+@\\w+\\.\\w+") hint "Please provide a valid email address (optional)"
+                    }
                 }
             }
 
