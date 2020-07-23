@@ -3,7 +3,7 @@ import de.kotlinBerlin.kValidation.Validation
 import de.kotlinBerlin.kValidation.constraints.minLength
 import kotlin.test.Test
 
-class TestExtended {
+class TestExtendedJs {
 
     data class Person(val name: String?, val familyName: String?, val parent: Person?)
 
