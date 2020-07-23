@@ -10,12 +10,15 @@ internal enum class PropModifier {
 }
 
 internal abstract class PropKey<T> {
+    abstract val modifier: PropModifier
+    abstract val pathDescriptor: PathDescriptor<T, *>
     abstract fun build(builder: ValidationBuilder<*>): Validation<T>
+    abstract fun copyWith(aModifier: PropModifier): PropKey<T>
 }
 
 internal data class SingleValuePropKey<T, R>(
-    val pathDescriptor: PathDescriptor<T, R>,
-    val modifier: PropModifier
+    override val pathDescriptor: PathDescriptor<T, R>,
+    override val modifier: PropModifier
 ) : PropKey<T>() {
     override fun build(builder: ValidationBuilder<*>): Validation<T> {
         @Suppress("UNCHECKED_CAST")
@@ -26,11 +29,15 @@ internal data class SingleValuePropKey<T, R>(
             Required -> RequiredPropertyValidation(pathDescriptor, validations)
         }
     }
+
+    override fun copyWith(aModifier: PropModifier): PropKey<T> {
+        return SingleValuePropKey(pathDescriptor, aModifier)
+    }
 }
 
 internal data class IterablePropKey<T, R>(
-    val pathDescriptor: PathDescriptor<T, Iterable<R>>,
-    val modifier: PropModifier,
+    override val pathDescriptor: PathDescriptor<T, Iterable<R>>,
+    override val modifier: PropModifier,
     private val anIndexList: IntArray = IntArray(0)
 ) : PropKey<T>() {
     override fun build(builder: ValidationBuilder<*>): Validation<T> {
@@ -42,6 +49,10 @@ internal data class IterablePropKey<T, R>(
             Optional -> OptionalPropertyValidation(pathDescriptor, tempIterableValidation)
             Required -> RequiredPropertyValidation(pathDescriptor, tempIterableValidation)
         }
+    }
+
+    override fun copyWith(aModifier: PropModifier): PropKey<T> {
+        return IterablePropKey(pathDescriptor, aModifier, anIndexList)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -64,8 +75,8 @@ internal data class IterablePropKey<T, R>(
 }
 
 internal data class ArrayPropKey<T, R>(
-    val pathDescriptor: PathDescriptor<T, Array<R>>,
-    val modifier: PropModifier,
+    override val pathDescriptor: PathDescriptor<T, Array<R>>,
+    override val modifier: PropModifier,
     private val anIndexList: IntArray = IntArray(0)
 ) : PropKey<T>() {
     override fun build(builder: ValidationBuilder<*>): Validation<T> {
@@ -77,6 +88,10 @@ internal data class ArrayPropKey<T, R>(
             Optional -> OptionalPropertyValidation(pathDescriptor, tempArrayValidation)
             Required -> RequiredPropertyValidation(pathDescriptor, tempArrayValidation)
         }
+    }
+
+    override fun copyWith(aModifier: PropModifier): PropKey<T> {
+        return ArrayPropKey(pathDescriptor, aModifier, anIndexList)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -99,8 +114,8 @@ internal data class ArrayPropKey<T, R>(
 }
 
 internal data class MapPropKey<T, K, V>(
-    val pathDescriptor: PathDescriptor<T, Map<K, V>>,
-    val modifier: PropModifier,
+    override val pathDescriptor: PathDescriptor<T, Map<K, V>>,
+    override val modifier: PropModifier,
     private val aKeyList: Array<out K>
 ) : PropKey<T>() {
     override fun build(builder: ValidationBuilder<*>): Validation<T> {
@@ -112,6 +127,10 @@ internal data class MapPropKey<T, K, V>(
             Optional -> OptionalPropertyValidation(pathDescriptor, tempMapValidation)
             Required -> RequiredPropertyValidation(pathDescriptor, tempMapValidation)
         }
+    }
+
+    override fun copyWith(aModifier: PropModifier): PropKey<T> {
+        return MapPropKey(pathDescriptor, aModifier, aKeyList)
     }
 
     override fun equals(other: Any?): Boolean {

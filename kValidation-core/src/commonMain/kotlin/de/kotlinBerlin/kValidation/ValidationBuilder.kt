@@ -24,10 +24,11 @@ interface ValidationBuilder<T> {
     fun addConstraint(
         errorMessage: String,
         vararg templateValues: String,
-        test: (T, ValidationContext?) -> Boolean
+        test: (T, Map<String, Any?>) -> Boolean
     ): Constraint<T>
 
-    infix fun Constraint<T>.hint(hint: String): Constraint<T>
+    infix fun Constraint<T>.hint(aNewHint: String): Constraint<T>
+    fun Constraint<T>.asWarning(): Constraint<T>
     fun run(validation: Validation<T>)
 
     infix fun <R> PathDescriptor<T, R>.validateIf(init: AndValidationBuilder<T>.() -> Unit): PathDescriptor<T, R> {
