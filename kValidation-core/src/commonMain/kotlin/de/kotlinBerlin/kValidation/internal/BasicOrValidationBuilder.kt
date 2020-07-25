@@ -55,9 +55,6 @@ internal class BasicOrValidationBuilder<T> : BasicValidationBuilder<T>(true), Or
         getOrCreateBuilder(Required).also(init)
     }
 
-    override val <R> PathDescriptor<T, R>.has: OrValidationBuilder<R>
-        get() = getOrCreateBuilder(Undefined)
-
     override fun and(anInitBlock: AndValidationBuilder<T>.() -> Unit) {
         val tempBuilder = BasicAndValidationBuilder<T>()
         tempBuilder.anInitBlock()

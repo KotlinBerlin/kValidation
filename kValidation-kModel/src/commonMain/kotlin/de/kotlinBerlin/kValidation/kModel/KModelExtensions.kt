@@ -8,7 +8,6 @@ import de.kotlinBerlin.kModel.dsl.ModelClassBuilder
 import de.kotlinBerlin.kModel.dsl.ModelRelationBuilder
 import de.kotlinBerlin.kModel.dsl.ModelReverseRelationBuilder
 import de.kotlinBerlin.kValidation.*
-import de.kotlinBerlin.kValidation.constraints.onEach
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
@@ -44,7 +43,7 @@ val <T : Any> ModelClass<T>.fullValidation: Validation<T> by object : ReadOnlyPr
                             is MutablePropertyAttribute -> PropertyPathDescriptor(it.property)
                             is FunctionAttribute -> FunctionPathDescriptor(it.function)
                         }
-                        tempDescriptor validate {
+                        tempDescriptor {
                             run(tempAttributeValidation as Validation<Any?>)
                         }
                     }
@@ -61,14 +60,14 @@ val <T : Any> ModelClass<T>.fullValidation: Validation<T> by object : ReadOnlyPr
                                 val tempFieldValidation = tempRelation.validation
                                 val tempClassValidation = tempRelation.targetClass.fullValidation
 
-                                tempSourceField validate {
+                                tempSourceField {
                                     if (tempFieldValidation != null) {
                                         run(tempFieldValidation)
                                     }
-                                    onEach {
+                                    thisPath allInIterable {
                                         thisPath validateIf {
                                             noRepeat()
-                                        } validate {
+                                        } invoke {
                                             run(tempClassValidation as Validation<Any>)
                                         }
                                     }
@@ -83,7 +82,7 @@ val <T : Any> ModelClass<T>.fullValidation: Validation<T> by object : ReadOnlyPr
                             if (tempSourceField != null) {
                                 val tempFieldValidation = tempRelation.validation
                                 val tempClassValidation = tempRelation.targetClass.fullValidation
-                                tempSourceField validate {
+                                tempSourceField {
                                     if (tempFieldValidation != null) {
                                         run(tempFieldValidation as Validation<Any?>)
                                     }
@@ -92,7 +91,7 @@ val <T : Any> ModelClass<T>.fullValidation: Validation<T> by object : ReadOnlyPr
                                     tempSourceField required {
                                         noRepeat()
                                     }
-                                } validate {
+                                } invoke {
                                     run(tempClassValidation as Validation<Any?>)
                                 }
                             }
@@ -106,15 +105,10 @@ val <T : Any> ModelClass<T>.fullValidation: Validation<T> by object : ReadOnlyPr
             }
             cache[thisRef] = Pair(true, tempValidation)
         }
-        return object : Validation<T> {
-            override fun validate(aValue: T, aContext: ValidationContext): ValidationResult<T> {
-                val tempContext: WrappingValidationContext =
-                    if (aContext is WrappingValidationContext && aContext.wrapped is NonRepeatingContext) aContext else WrappingValidationContext(
-                        aContext,
-                        NonRepeatingContext()
-                    )
+        return object : Validation<T>() {
+            override fun validate(aValue: T, aContext: ValidationContext<*>): Boolean {
                 val tempPair: Pair<Boolean, Validation<*>?>? = cache[thisRef]
-                return (tempPair?.second as? Validation<T>)?.validate(aValue, tempContext) ?: Valid(aValue)
+                return (tempPair?.second as? Validation<T>)?.validate(aValue, aContext) ?: false
             }
         }
     }

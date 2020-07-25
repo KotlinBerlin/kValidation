@@ -16,7 +16,7 @@ class ReadmeExampleTest {
         )
 
         val validateUser = Validation<UserProfile> {
-            UserProfile::fullName.validate {
+            UserProfile::fullName.invoke {
                 minLength(2)
                 maxLength(100)
             }
@@ -29,10 +29,11 @@ class ReadmeExampleTest {
 
         val invalidUser = UserProfile("A", -1)
         val validationResult = validateUser(invalidUser)
-
-        assertEquals(2, validationResult.errors.size)
-        assertEquals("'A' must have at least 2 characters", validationResult.errors.first().message)
-        assertEquals("'-1' must be at least '0'", validationResult.errors.last().message)
+        assertType<Invalid<UserProfile>>(validationResult) {
+            assertEquals(2, it.flatErrors.size)
+            assertEquals("must have at least 2 characters", it.flatErrors.first().message)
+            assertEquals("must be at least '0'", it.flatErrors.last().message)
+        }
     }
 
     @Test
@@ -46,7 +47,7 @@ class ReadmeExampleTest {
         )
 
         val validateEvent = Validation<Event> {
-            Event::organizer.validate {
+            Event::organizer.invoke {
                 // even though the email is nullable you can force it to be set in the validation
                 Person::email required {
                     pattern("\\w+@bigcorp.com") hint "Organizers must have a BigCorp email address"
@@ -54,13 +55,13 @@ class ReadmeExampleTest {
             }
 
             // validation on the attendees list
-            Event::attendees.validate {
+            Event::attendees.invoke {
                 maxItems(100)
                 thisPath allInIterable {
-                    Person::name.validate {
+                    Person::name.invoke {
                         minLength(2)
                     }
-                    Person::age.validate {
+                    Person::age.invoke {
                         minimum(18) hint "Attendees must be 18 years or older"
                     }
                     // Email is optional but if it is set it must be valid
@@ -71,7 +72,7 @@ class ReadmeExampleTest {
             }
 
             // validation on the ticketPrices Map as a whole
-            Event::ticketPrices.validate {
+            Event::ticketPrices.invoke {
                 minItems(1) hint "Provide at least one ticket price"
             }
 
@@ -111,8 +112,16 @@ class ReadmeExampleTest {
         )
 
         val tempResult = validateEvent(invalidEvent)
+        tempResult.flatErrors.forEach {
+            println("${it.dataPath}: ${it.message}")
+        }
         assertEquals(3, countFieldsWithErrors(tempResult))
-        assertEquals("Attendees must be 18 years or older", tempResult[Event::attendees, 0, Person::age]!![0])
+        assertType<Invalid<Event>>(tempResult) {
+            assertEquals(
+                "Attendees must be 18 years or older",
+                it.errorsAt(Event::attendees, 0, Person::age)[0].message
+            )
+        }
     }
 
 }

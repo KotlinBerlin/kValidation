@@ -1,4 +1,4 @@
-@file:Suppress("UNUSED_VARIABLE", "SpellCheckingInspection")
+@file:Suppress("UNUSED_VARIABLE", "SpellCheckingInspection", "COMPATIBILITY_WARNING")
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
@@ -12,8 +12,8 @@ repositories {
     maven("https://dl.bintray.com/konform-kt/konform")
 }
 
-val ideaActive = System.getProperty("idea.active") == "true"
-lateinit var tempJvm9KotlinOutputDir: File
+internal val ideaActive = System.getProperty("idea.active") == "true"
+internal lateinit var tempJvm9KotlinOutputDir: File
 
 kotlin {
     jvm("jvm8") {

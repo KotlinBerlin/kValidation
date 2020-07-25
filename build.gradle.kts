@@ -1,14 +1,16 @@
 @file:Suppress("SpellCheckingInspection")
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 plugins {
-    kotlin("multiplatform") version "1.4-M2" apply false
+    kotlin("multiplatform") version "1.4-M3" apply false
 }
 
 allprojects {
     group = "de.kotlin-berlin"
-    version = "1.0-RC2"
+    version = "1.0-RC3"
 
     repositories {
         jcenter()

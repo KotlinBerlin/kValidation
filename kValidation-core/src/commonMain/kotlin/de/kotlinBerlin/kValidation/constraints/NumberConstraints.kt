@@ -1,8 +1,12 @@
+@file:Suppress("unused")
+
 package de.kotlinBerlin.kValidation.constraints
 
 import de.kotlinBerlin.kValidation.ValidationBuilder
+import kotlin.jvm.JvmOverloads
 import kotlin.math.roundToInt
 
+/** Checks whether or not the number is a multiple of [factor]. */
 fun <T : Number> ValidationBuilder<T>.multipleOf(factor: Number): Constraint<T> {
     val factorAsDouble = factor.toDouble()
     require(factorAsDouble > 0) { "multipleOf requires the factor to be strictly larger than 0" }
@@ -12,40 +16,37 @@ fun <T : Number> ValidationBuilder<T>.multipleOf(factor: Number): Constraint<T> 
     }
 }
 
-fun <T : Number> ValidationBuilder<T>.maximum(maximumInclusive: Number) =
+/** Checks whether or not the number is < (if [exclusive] is true) or <= (if [exclusive] is false) than [maximum]. */
+@JvmOverloads
+fun <T : Number> ValidationBuilder<T>.maximum(maximum: Number, exclusive: Boolean = false): Constraint<T> =
     addConstraint(
-        "must be at most '{0}'",
-        maximumInclusive.toString()
-    ) { tempValue, _ -> tempValue.toDouble() <= maximumInclusive.toDouble() }
+        if (exclusive) "must be less than '{0}'" else "must be at most '{0}'",
+        maximum.toString()
+    ) { tempValue, _ -> if (exclusive) tempValue.toDouble() < maximum.toDouble() else tempValue.toDouble() <= maximum.toDouble() }
 
-fun <T : Number> ValidationBuilder<T>.exclusiveMaximum(maximumExclusive: Number) = addConstraint(
-    "must be less than '{0}'",
-    maximumExclusive.toString()
+/** Checks whether or not the number is > (if [exclusive] is true) or >= (if [exclusive] is false) than [minimum]. */
+@JvmOverloads
+fun <T : Number> ValidationBuilder<T>.minimum(minimum: Number, exclusive: Boolean = false): Constraint<T> =
+    addConstraint(
+        if (exclusive) "must be greater than '{0}'" else "must be at least '{0}'",
+        minimum.toString()
+    ) { tempValue, _ -> if (exclusive) tempValue.toDouble() > minimum.toDouble() else tempValue.toDouble() >= minimum.toDouble() }
 
-) { tempValue, _ -> tempValue.toDouble() < maximumExclusive.toDouble() }
+/** Checks whether or not the number is > [start] and < [end] (if [exclusive] is true) or >= [start] and <= [end] (if [exclusive] is false). */
+@JvmOverloads
+fun <T : Number> ValidationBuilder<T>.between(start: Number, end: Number, exclusive: Boolean = false): Constraint<T> =
+    addConstraint(
+        if (exclusive) "must be greater than '{0}' and less than '{1}'" else "must be at least '{0}' and not greater than '{1}'",
+        start.toString(),
+        end.toString()
+    ) { tempValue, _ ->
+        if (exclusive)
+            tempValue.toDouble() > start.toDouble() && tempValue.toDouble() < end.toDouble()
+        else
+            tempValue.toDouble() >= start.toDouble() && tempValue.toDouble() <= end.toDouble()
+    }
 
-fun <T : Number> ValidationBuilder<T>.minimum(minimumInclusive: Number) = addConstraint(
-    "must be at least '{0}'",
-    minimumInclusive.toString()
-) { tempValue, _ -> tempValue.toDouble() >= minimumInclusive.toDouble() }
-
-fun <T : Number> ValidationBuilder<T>.exclusiveMinimum(minimumExclusive: Number) = addConstraint(
-    "must be greater than '{0}'",
-    minimumExclusive.toString()
-) { tempValue, _ -> tempValue.toDouble() > minimumExclusive.toDouble() }
-
-fun <T : Number> ValidationBuilder<T>.between(startInclusive: Number, endInclusive: Number) = addConstraint(
-    "must be at least '{0}' and not greater than '{1}'",
-    startInclusive.toString(),
-    endInclusive.toString()
-) { tempValue, _ -> tempValue.toDouble() >= startInclusive.toDouble() && tempValue.toDouble() <= endInclusive.toDouble() }
-
-fun <T : Number> ValidationBuilder<T>.betweenExclusive(startInclusive: Number, endExclusive: Number) = addConstraint(
-    "must be greater than '{0}' and less than '{1}'",
-    startInclusive.toString(),
-    endExclusive.toString()
-) { tempValue, _ -> tempValue.toDouble() > startInclusive.toDouble() && tempValue.toDouble() < endExclusive.toDouble() }
-
+/** Checks whether or not the number is in the [range]. */
 fun <T, R> ValidationBuilder<T>.inRange(range: ClosedRange<R>): Constraint<T>
         where R : Comparable<R>,
               R : Number,

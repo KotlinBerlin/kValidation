@@ -2,7 +2,7 @@
 
 import de.kotlinBerlin.kModel.MODEL_MANAGER
 import de.kotlinBerlin.kModel.dsl.model
-import de.kotlinBerlin.kValidation.*
+import de.kotlinBerlin.kValidation.constraints.*
 import de.kotlinBerlin.kValidation.kModel.fullValidation
 import de.kotlinBerlin.kValidation.kModel.validated
 import kotlin.test.Test

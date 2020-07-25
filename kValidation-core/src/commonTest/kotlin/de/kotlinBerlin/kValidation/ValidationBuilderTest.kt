@@ -18,7 +18,7 @@ class ValidationBuilderTest {
     @Test
     fun singleValidation() {
         val oneValidation = Validation<Register> {
-            Register::password.validate {
+            Register::password.invoke {
                 minLength(1)
             }
         }
@@ -30,10 +30,10 @@ class ValidationBuilderTest {
     @Test
     fun disjunctValidations() {
         val twoDisjunctValidations = Validation<Register> {
-            Register::password.validate {
+            Register::password.invoke {
                 minLength(1)
             }
-            Register::password.validate {
+            Register::password.invoke {
                 maxLength(10)
             }
         }
@@ -51,7 +51,7 @@ class ValidationBuilderTest {
     @Test
     fun overlappingValidations() {
         val overlappingValidations = Validation<Register> {
-            Register::password.validate {
+            Register::password.invoke {
                 minLength(8)
                 containsANumber()
             }
@@ -71,12 +71,12 @@ class ValidationBuilderTest {
     @Test
     fun validatingMultipleFields() {
         val overlappingValidations = Validation<Register> {
-            Register::password.validate {
+            Register::password.invoke {
                 minLength(8)
                 containsANumber()
             }
 
-            Register::email.validate {
+            Register::email.invoke {
                 pattern(".+@.+".toRegex())
             }
         }
@@ -143,7 +143,7 @@ class ValidationBuilderTest {
     fun validatingNestedTypesDirectly() {
         val nestedTypeValidation = Validation<Register> {
             Register::home ifPresent {
-                Address::address.validate {
+                Address::address.invoke {
                     minLength(1)
                 }
             }
@@ -162,41 +162,13 @@ class ValidationBuilderTest {
     }
 
     @Test
-    fun alternativeSyntax() {
-        val splitDoubleValidation = Validation<Register> {
-            Register::password.has.minLength(1)
-            Register::password.has.maxLength(10)
-            Register::email.has.pattern(".+@.+".toRegex())
-        }
-
-        Register(email = "tester@test.com", password = "a").let {
-            assertEquals(
-                Valid(it),
-                splitDoubleValidation(it)
-            )
-        }
-        assertEquals(
-            1,
-            countErrors(splitDoubleValidation(Register(email = "tester@test.com", password = "")), Register::password)
-        )
-        assertEquals(
-            1,
-            countErrors(
-                splitDoubleValidation(Register(email = "tester@test.com", password = "aaaaaaaaaaa")),
-                Register::password
-            )
-        )
-        assertEquals(2, countFieldsWithErrors(splitDoubleValidation(Register(email = "tester@"))))
-    }
-
-    @Test
     fun validateLists() {
 
         data class Data(val registrations: List<Register> = emptyList())
 
         val listValidation = Validation<Data> {
             Data::registrations allInIterable {
-                Register::email.validate {
+                Register::email.invoke {
                     minLength(3)
                 }
             }
@@ -239,7 +211,7 @@ class ValidationBuilderTest {
 
         val arrayValidation = Validation<Data> {
             Data::registrations allInArray {
-                Register::email.validate {
+                Register::email.invoke {
                     minLength(3)
                 }
             }
@@ -273,8 +245,8 @@ class ValidationBuilderTest {
 
         val mapValidation = Validation<Data> {
             Data::registrations allInMap {
-                Map.Entry<String, Register>::value.validate {
-                    Register::email.validate {
+                Map.Entry<String, Register>::value.invoke {
+                    Register::email.invoke {
                         minLength(2)
                     }
                 }
@@ -298,7 +270,7 @@ class ValidationBuilderTest {
     @Test
     fun composeValidations() {
         val addressValidation = Validation<Address> {
-            Address::address.has.minLength(1)
+            Address::address { minLength(1) }
         }
 
         val validation = Validation<Register> {
@@ -313,9 +285,11 @@ class ValidationBuilderTest {
     @Test
     fun replacePlaceholderInString() {
         val validation = Validation<Register> {
-            Register::password.has.minLength(8)
+            Register::password{ minLength(8) }
         }
-        assertTrue(validation(Register(password = ""))[Register::password]!![0].contains("8"))
+        assertType<Invalid<Register>>(validation(Register(password = ""))) {
+            assertTrue(it.errorsAt(Register::password)[0].message.contains("8"))
+        }
     }
 
     private data class Register(

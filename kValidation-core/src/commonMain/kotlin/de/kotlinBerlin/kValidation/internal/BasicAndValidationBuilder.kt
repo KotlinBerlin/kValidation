@@ -9,7 +9,7 @@ internal class BasicAndValidationBuilder<T> : BasicValidationBuilder<T>(false), 
 
     override fun isCombineWithOr(): Boolean = false
 
-    override fun <R> PathDescriptor<T, R>.validate(init: AndValidationBuilder<R>.() -> Unit) {
+    override fun <R> PathDescriptor<T, R>.invoke(init: AndValidationBuilder<R>.() -> Unit) {
         getOrCreateBuilder(Undefined).also(init)
     }
 
@@ -54,9 +54,6 @@ internal class BasicAndValidationBuilder<T> : BasicValidationBuilder<T>(false), 
     override fun <R> PathDescriptor<T, R?>.required(init: AndValidationBuilder<R>.() -> Unit) {
         getOrCreateBuilder(Required).also(init)
     }
-
-    override val <R> PathDescriptor<T, R>.has: AndValidationBuilder<R>
-        get() = getOrCreateBuilder(Undefined)
 
     override fun or(anInitBlock: OrValidationBuilder<T>.() -> Unit) {
         val tempBuilder = BasicOrValidationBuilder<T>()

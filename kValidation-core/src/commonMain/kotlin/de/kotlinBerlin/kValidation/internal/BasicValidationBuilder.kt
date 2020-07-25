@@ -10,7 +10,7 @@ internal abstract class BasicValidationBuilder<T>(
 
     private val constraints = mutableListOf<Constraint<T>>()
     private val subValidations = mutableMapOf<PropKey<T>, ValidationBuilder<*>>()
-    private val prebuiltValidations = mutableListOf<Validation<T>>()
+    private val prebuiltValidations = mutableListOf<Validation<in T>>()
 
     protected abstract fun isCombineWithOr(): Boolean
 
@@ -42,7 +42,7 @@ internal abstract class BasicValidationBuilder<T>(
         test: (T, Map<String, Any?>) -> Boolean
     ): Constraint<T> = Constraint(errorMessage, templateValues.toList(), test = test).also { constraints.add(it) }
 
-    override fun run(validation: Validation<T>) {
+    override fun run(validation: Validation<in T>) {
         prebuiltValidations.add(validation)
     }
 

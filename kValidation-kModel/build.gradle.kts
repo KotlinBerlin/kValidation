@@ -1,4 +1,4 @@
-@file:Suppress("UNUSED_VARIABLE", "SpellCheckingInspection")
+@file:Suppress("UNUSED_VARIABLE", "SpellCheckingInspection", "COMPATIBILITY_WARNING")
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
@@ -8,8 +8,8 @@ plugins {
     id("org.jetbrains.dokka") version "0.10.1"
 }
 
-val ideaActive = System.getProperty("idea.active") == "true"
-lateinit var tempJvm9KotlinOutputDir: File
+internal val ideaActive = System.getProperty("idea.active") == "true"
+internal lateinit var tempJvm9KotlinOutputDir: File
 
 kotlin {
     jvm("jvm8") {
@@ -70,7 +70,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation("de.kotlin-berlin:kValidation-core:1.0-RC2")
+                implementation("de.kotlin-berlin:kValidation-core:1.0-RC3")
                 implementation("de.kotlin-berlin:kModel-core:1.0-RC2")
             }
         }

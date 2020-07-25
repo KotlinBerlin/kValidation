@@ -26,6 +26,19 @@ object ThisPathDescriptor : PathDescriptor<Any?, Any?>() {
     override val name: String get() = ""
 }
 
+/** A custom path to any object that gets returned by the getter. The identifier will be used when comparing instances of it with others. */
+class CustomPathDescriptor<in T, out R>(
+    private val getter: (T) -> R,
+    /** A unique identifier for this path. The [Any.toString] method  on the [identifier] is used to determine the name of this path. */
+    val identifier: Any,
+) : PathDescriptor<T, R>() {
+    override val name: String get() = identifier.toString()
+    override fun get(aValue: T): R = getter(aValue)
+
+    override fun equals(other: Any?): Boolean = other is CustomPathDescriptor<*, *> && other.identifier == identifier
+    override fun hashCode(): Int = identifier.hashCode()
+}
+
 /** Represents the path to a nested property. */
 class PropertyPathDescriptor<in T, out R>(
     /** The nested property. */
@@ -85,7 +98,7 @@ class IterablePathDescriptor<R>(
 }
 
 /** Represents the path to an object that should only be validated if the [condition] is valid itself. */
-class ConditionalPathDescriptor<T, out R>(
+internal class ConditionalPathDescriptor<T, out R>(
     internal val descriptor: PathDescriptor<T, R>,
     /** The condition to check first. */
     val condition: Validation<T>
