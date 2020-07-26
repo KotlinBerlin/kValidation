@@ -60,9 +60,9 @@ sealed class Invalid<out T>(aValue: T, internal open val parent: CompoundResult<
 sealed class SimpleInvalidResult<out T>(
     override val message: String,
     value: T,
-    override val parent: CompoundResult<*>
-) :
-    Invalid<T>(value, parent) {
+    parent: CompoundResult<*>
+) : Invalid<T>(value, parent) {
+    override val parent: CompoundResult<*> get() = super.parent!!
     override val flatErrors: List<SimpleInvalidResult<T>> get() = listOf(this)
 
     /** The path to the root object that was validated. */
@@ -109,18 +109,19 @@ sealed class CompoundResult<out T>(value: T, parent: CompoundResult<*>?) : Inval
 
 /** A result that wraps other results inside it that are reachable by the [path]. */
 class PathResult<out T>(
+    path: PathDescriptor<*, *>, value: T, parent: CompoundResult<*>?
+) : CompoundResult<T>(value, parent) {
+
     /** The path to the validated sub object. */
-    val path: PathDescriptor<*, *>, value: T, parent: CompoundResult<*>?
-) :
-    CompoundResult<T>(value, parent) {
+    val path: PathDescriptor<*, *> = path.unwrap()
     override val combinationSign: String get() = ","
 
     override val dataPath: ValidationPath get() = BasicValidationPath(mutableListOf(*super.dataPath.segments, path))
 
     override fun errorsAt(vararg aSubPath: Any?, includeSubErrors: Boolean): List<SimpleInvalidResult<*>> {
+        if (path is ThisPathDescriptor) return errors.first().errorsAt(*aSubPath, includeSubErrors = includeSubErrors)
         if (aSubPath.isEmpty() && !includeSubErrors) return emptyList()
         if (aSubPath.isEmpty() && includeSubErrors) return errors.first().errorsAt(includeSubErrors = includeSubErrors)
-        if (path is ThisPathDescriptor) return errors.first().errorsAt(*aSubPath, includeSubErrors = includeSubErrors)
 
         val tempCurrentSubPath = aSubPath[0]
         val tempRemainingSubPath = aSubPath.sliceArray(1..aSubPath.lastIndex)
@@ -146,19 +147,22 @@ class PathResult<out T>(
     }
 
     private fun pathMatches(aPath: PathDescriptor<*, *>, anObject: Any?): Boolean = when (aPath) {
-        ThisPathDescriptor -> throw IllegalStateException("Should not happen!")
+        ThisPathDescriptor, is ConditionalPathDescriptor -> throw IllegalStateException("Should not happen!")
         is PropertyPathDescriptor -> anObject is KProperty1<*, *> && anObject.name == aPath.name
         is FunctionPathDescriptor -> anObject is KFunction1<*, *> && anObject.name == aPath.name
         is MapPathDescriptor<*, *> -> anObject == aPath.key
         is ArrayPathDescriptor -> anObject == aPath.index
         is IterablePathDescriptor -> anObject == aPath.index
-        is ConditionalPathDescriptor -> pathMatches(aPath.descriptor, anObject)
         is CustomPathDescriptor -> anObject == aPath.identifier
     }
+
+    private fun PathDescriptor<*, *>.unwrap(): PathDescriptor<*, *> =
+        if (this is ConditionalPathDescriptor) descriptor.unwrap() else this
 }
 
 /** A result wrapping other results that are combined by a logical operator. */
-sealed class LogicalResult<out T>(value: T, override val parent: CompoundResult<*>) : CompoundResult<T>(value, parent) {
+sealed class LogicalResult<out T>(value: T, parent: CompoundResult<*>) : CompoundResult<T>(value, parent) {
+    override val parent: CompoundResult<*> get() = super.parent!!
     override fun print(): String {
         if (internalErrors.size == 1) return internalErrors[0].print()
 

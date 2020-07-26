@@ -1,6 +1,6 @@
 module de.kotlinBerlin.kValidation.core {
 
-	requires transitive kotlin.stdlib;
+	requires kotlin.stdlib;
 
 	exports de.kotlinBerlin.kValidation;
 }
