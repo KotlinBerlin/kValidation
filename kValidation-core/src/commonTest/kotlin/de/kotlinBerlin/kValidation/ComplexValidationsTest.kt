@@ -234,8 +234,10 @@ class ComplexValidationsTest {
         val tempPersonListValidation = Validation<Map<Int, Person>> {
             thisPath.allKeysInMap(0, 2) {
                 Entry<Int, Person>::value {
-                    Person::name required {
-                        minLength(1)
+                    Person::name {
+                        required {
+                            minLength(1)
+                        }
                     }
                 }
             }

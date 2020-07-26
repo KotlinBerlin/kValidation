@@ -245,7 +245,7 @@ class ValidationBuilderTest {
 
         val mapValidation = Validation<Data> {
             Data::registrations allInMap {
-                Map.Entry<String, Register>::value.invoke {
+                value {
                     Register::email.invoke {
                         minLength(2)
                     }
@@ -264,6 +264,12 @@ class ValidationBuilderTest {
                 val tempResult = mapValidation(it)
                 assertEquals(0, countErrors(tempResult, Data::registrations, "user1"))
                 assertEquals(1, countErrors(tempResult, Data::registrations, "user2"))
+                tempResult.groupedErrors
+                assertEquals(
+                    "must have at least 2 characters",
+                    tempResult.errorsAt(Data::registrations, "user2", MAP_VALUE_SELECTOR, Register::email)
+                        .first().message
+                )
             }
     }
 
