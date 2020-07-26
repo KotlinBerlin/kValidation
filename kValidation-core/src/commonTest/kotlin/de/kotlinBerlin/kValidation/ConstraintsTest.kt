@@ -6,7 +6,6 @@ import de.kotlinBerlin.kValidation.ConstraintsTest.TCPPacket.*
 import de.kotlinBerlin.kValidation.constraints.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class ConstraintsTest {
 
@@ -102,28 +101,8 @@ class ConstraintsTest {
     }
 
     @Test
-    fun multipleOfConstraint() {
-        val validation = Validation<Number> { multipleOf(2.5) }
-        assertEquals(Valid(0), validation(0))
-        assertEquals(Valid(-2.5), validation(-2.5))
-        assertEquals(Valid(2.5), validation(2.5))
-        assertEquals(Valid(5), validation(5))
-        assertEquals(Valid(25), validation(25))
-
-        assertEquals(1, countFieldsWithErrors(validation(1)))
-        assertEquals(1, countFieldsWithErrors(validation(1.0)))
-        assertEquals(1, countFieldsWithErrors(validation(-4.0)))
-        assertEquals(1, countFieldsWithErrors(validation(25.1)))
-
-        assertFailsWith(IllegalArgumentException::class) { Validation<Number> { multipleOf(0) } }
-        assertFailsWith(IllegalArgumentException::class) { Validation<Number> { multipleOf(-1) } }
-
-        assertEquals("must be a multiple of '2.5'", validation(1).errorsAt(includeSubErrors = true)[0].message)
-    }
-
-    @Test
     fun maximumConstraint() {
-        val validation = Validation<Number> { maximum(10) }
+        val validation = Validation<Number> { max(10) }
 
         assertEquals(Valid(Double.NEGATIVE_INFINITY), validation(Double.NEGATIVE_INFINITY))
         assertEquals(Valid(-10), validation(-10))
@@ -137,7 +116,7 @@ class ConstraintsTest {
 
         assertEquals(
             Valid(Double.POSITIVE_INFINITY),
-            Validation<Number> { maximum(Double.POSITIVE_INFINITY) }(Double.POSITIVE_INFINITY)
+            Validation<Number> { max(Double.POSITIVE_INFINITY) }(Double.POSITIVE_INFINITY)
         )
 
         assertEquals("must be at most '10'", validation(11).errorsAt(includeSubErrors = true)[0].message)
@@ -145,7 +124,7 @@ class ConstraintsTest {
 
     @Test
     fun exclusiveMaximumConstraint() {
-        val validation = Validation<Number> { maximum(10, exclusive = true) }
+        val validation = Validation<Number> { max(10, exclusive = true) }
 
         assertEquals(Valid(Double.NEGATIVE_INFINITY), validation(Double.NEGATIVE_INFINITY))
         assertEquals(Valid(-10), validation(-10))
@@ -160,7 +139,7 @@ class ConstraintsTest {
         assertEquals(
             1,
             countFieldsWithErrors(Validation<Number> {
-                maximum(
+                max(
                     Double.POSITIVE_INFINITY,
                     exclusive = true
                 )
@@ -173,7 +152,7 @@ class ConstraintsTest {
 
     @Test
     fun minimumConstraint() {
-        val validation = Validation<Number> { minimum(10) }
+        val validation = Validation<Number> { min(10) }
 
         assertEquals(Valid(Double.POSITIVE_INFINITY), validation(Double.POSITIVE_INFINITY))
         assertEquals(Valid(20), validation(20))
@@ -187,7 +166,7 @@ class ConstraintsTest {
 
         assertEquals(
             Valid(Double.NEGATIVE_INFINITY),
-            Validation<Number> { minimum(Double.NEGATIVE_INFINITY) }(Double.NEGATIVE_INFINITY)
+            Validation<Number> { min(Double.NEGATIVE_INFINITY) }(Double.NEGATIVE_INFINITY)
         )
 
         assertEquals("must be at least '10'", validation(9).errorsAt(includeSubErrors = true)[0].message)
@@ -195,7 +174,7 @@ class ConstraintsTest {
 
     @Test
     fun minimumExclusiveConstraint() {
-        val validation = Validation<Number> { minimum(10, exclusive = true) }
+        val validation = Validation<Number> { min(10, exclusive = true) }
 
         assertEquals(Valid(Double.POSITIVE_INFINITY), validation(Double.POSITIVE_INFINITY))
         assertEquals(Valid(20), validation(20))
@@ -210,7 +189,7 @@ class ConstraintsTest {
         assertEquals(
             1,
             countFieldsWithErrors(Validation<Number> {
-                minimum(
+                min(
                     Double.NEGATIVE_INFINITY,
                     exclusive = true
                 )
@@ -373,13 +352,13 @@ class ConstraintsTest {
 
     @Test
     fun uniqueItemsConstraint() {
-        val validation = Validation<List<String>> { uniqueItems() }
+        val validation = Validation<List<String>> { distinct() }
 
         assertEquals(Valid(emptyList()), validation(emptyList()))
         assertEquals(Valid(listOf("a")), validation(listOf("a")))
         assertEquals(Valid(listOf("a", "b")), validation(listOf("a", "b")))
 
-        val mapValidation = Validation<Map<String, String>> { uniqueValues() }
+        val mapValidation = Validation<Map<String, String>> { distinctValues() }
 
         assertEquals(Valid(emptyMap()), mapValidation(emptyMap()))
         assertEquals(
@@ -393,7 +372,7 @@ class ConstraintsTest {
 
         assertEquals(1, countFieldsWithErrors(validation(listOf("a", "a"))))
 
-        val arrayValidation = Validation<Array<String>> { uniqueItems() }
+        val arrayValidation = Validation<Array<String>> { distinct() }
 
         emptyArray<String>().let { assertEquals(Valid(it), arrayValidation(it)) }
         arrayOf("a").let { assertEquals(Valid(it), arrayValidation(it)) }

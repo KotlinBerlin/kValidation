@@ -28,9 +28,9 @@ object ThisPathDescriptor : PathDescriptor<Any?, Any?>() {
 
 /** A custom path to any object that gets returned by the getter. The identifier will be used when comparing instances of it with others. */
 class CustomPathDescriptor<in T, out R>(
-    private val getter: (T) -> R,
     /** A unique identifier for this path. The [Any.toString] method  on the [identifier] is used to determine the name of this path. */
     val identifier: Any,
+    private val getter: (T) -> R,
 ) : PathDescriptor<T, R>() {
     override val name: String get() = identifier.toString()
     override fun get(aValue: T): R = getter(aValue)

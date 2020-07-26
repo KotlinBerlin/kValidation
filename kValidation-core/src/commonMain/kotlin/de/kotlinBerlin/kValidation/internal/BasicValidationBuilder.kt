@@ -36,6 +36,12 @@ internal abstract class BasicValidationBuilder<T>(
             constraints.add(it)
         }
 
+    override fun Constraint<T>.not(): Constraint<T> =
+        Constraint<T>(hint, templateValues, false) { value, context -> !test(value, context) }.also {
+            constraints.remove(this)
+            constraints.add(it)
+        }
+
     override fun addConstraint(
         errorMessage: String,
         vararg templateValues: String,

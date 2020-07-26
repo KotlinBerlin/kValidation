@@ -4,21 +4,10 @@ package de.kotlinBerlin.kValidation.constraints
 
 import de.kotlinBerlin.kValidation.ValidationBuilder
 import kotlin.jvm.JvmOverloads
-import kotlin.math.roundToInt
-
-/** Checks whether or not the number is a multiple of [factor]. */
-fun <T : Number> ValidationBuilder<T>.multipleOf(factor: Number): Constraint<T> {
-    val factorAsDouble = factor.toDouble()
-    require(factorAsDouble > 0) { "multipleOf requires the factor to be strictly larger than 0" }
-    return addConstraint("must be a multiple of '{0}'", factor.toString()) { tempValue, _ ->
-        val division = tempValue.toDouble() / factorAsDouble
-        division.compareTo(division.roundToInt()) == 0
-    }
-}
 
 /** Checks whether or not the number is < (if [exclusive] is true) or <= (if [exclusive] is false) than [maximum]. */
 @JvmOverloads
-fun <T : Number> ValidationBuilder<T>.maximum(maximum: Number, exclusive: Boolean = false): Constraint<T> =
+fun <T : Number> ValidationBuilder<T>.max(maximum: Number, exclusive: Boolean = false): Constraint<T> =
     addConstraint(
         if (exclusive) "must be less than '{0}'" else "must be at most '{0}'",
         maximum.toString()
@@ -26,7 +15,7 @@ fun <T : Number> ValidationBuilder<T>.maximum(maximum: Number, exclusive: Boolea
 
 /** Checks whether or not the number is > (if [exclusive] is true) or >= (if [exclusive] is false) than [minimum]. */
 @JvmOverloads
-fun <T : Number> ValidationBuilder<T>.minimum(minimum: Number, exclusive: Boolean = false): Constraint<T> =
+fun <T : Number> ValidationBuilder<T>.min(minimum: Number, exclusive: Boolean = false): Constraint<T> =
     addConstraint(
         if (exclusive) "must be greater than '{0}'" else "must be at least '{0}'",
         minimum.toString()
@@ -46,12 +35,10 @@ fun <T : Number> ValidationBuilder<T>.between(start: Number, end: Number, exclus
             tempValue.toDouble() >= start.toDouble() && tempValue.toDouble() <= end.toDouble()
     }
 
-/** Checks whether or not the number is in the [range]. */
-fun <T, R> ValidationBuilder<T>.inRange(range: ClosedRange<R>): Constraint<T>
-        where R : Comparable<R>,
-              R : Number,
-              T : Number = addConstraint(
-    "must be at least '{0}' and not greater than '{1}'",
-    range.start.toString(),
-    range.endInclusive.toString()
-) { tempValue, _ -> tempValue.toDouble() in range.start.toDouble()..range.endInclusive.toDouble() }
+/** Checks whether or not the number is positive (including 0 if [allowZero] is true). */
+fun <T : Number> ValidationBuilder<T>.positive(allowZero: Boolean = false): Constraint<T> =
+    min(0, !allowZero) hint "must be positive${if (allowZero) "or 0" else ""}"
+
+/** Checks whether or not the number is negative (including 0 if [allowZero] is true). */
+fun <T : Number> ValidationBuilder<T>.negative(allowZero: Boolean = false): Constraint<T> =
+    max(0, !allowZero) hint "must be negative${if (allowZero) "or 0" else ""}"

@@ -63,3 +63,11 @@ inline fun <T> ValidationBuilder<T>.custom(
     crossinline test: (T, Map<String, Any?>) -> Boolean
 ): Constraint<T> =
     addConstraint(aMessage) { tempValue, tempContext -> test(tempValue, tempContext) }
+
+/** Checks whether or not the object is in the [range]. */
+fun <T> ValidationBuilder<T>.inRange(range: ClosedRange<T>): Constraint<T>
+        where T : Comparable<T> = addConstraint(
+    "must be at least '{0}' and not greater than '{1}'",
+    range.start.toString(),
+    range.endInclusive.toString()
+) { tempValue, _ -> tempValue in range }

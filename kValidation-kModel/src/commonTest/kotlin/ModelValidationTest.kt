@@ -28,8 +28,8 @@ class ModelValidationTest {
                 attribute(A::age) {
                     validated {
                         thisPath required {
-                            minimum(1)
-                            maximum(100)
+                            min(1)
+                            max(100)
                         }
                     }
                 }

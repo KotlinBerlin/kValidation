@@ -37,6 +37,9 @@ interface ValidationBuilder<T> {
     /** Marks the [Constraint] as a warning. */
     fun Constraint<T>.asWarning(): Constraint<T>
 
+    /** Negates the [Constraint]. */
+    fun Constraint<T>.not(): Constraint<T>
+
     /** Runs any other [Validation] in the context of this [Validation]. */
     fun run(validation: Validation<in T>)
 

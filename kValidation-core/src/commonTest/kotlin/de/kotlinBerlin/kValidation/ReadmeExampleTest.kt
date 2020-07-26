@@ -22,8 +22,8 @@ class ReadmeExampleTest {
             }
 
             UserProfile::age ifPresent {
-                minimum(0)
-                maximum(150)
+                min(0)
+                max(150)
             }
         }
 
@@ -62,7 +62,7 @@ class ReadmeExampleTest {
                         minLength(2)
                     }
                     Person::age.invoke {
-                        minimum(18) hint "Attendees must be 18 years or older"
+                        min(18) hint "Attendees must be 18 years or older"
                     }
                     // Email is optional but if it is set it must be valid
                     Person::email ifPresent {
@@ -80,7 +80,7 @@ class ReadmeExampleTest {
             Event::ticketPrices allInMap {
                 // Tickets may be free
                 Entry<String, Double?>::value ifPresent {
-                    minimum(0.01)
+                    min(0.01)
                 }
             }
         }
